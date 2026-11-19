@@ -1,5 +1,4 @@
 
-
 name: Bichar Android Build
 
 on:
@@ -18,8 +17,17 @@ jobs:
         with:
           channel: stable
 
+      - name: Backup Bichar Code
+        run: cp lib/main.dart /tmp/bichar_main.dart
+
       - name: Create Flutter Android Project
         run: flutter create . --platforms=android --project-name bichar
+
+      - name: Restore Bichar Code
+        run: cp /tmp/bichar_main.dart lib/main.dart
+
+      - name: Verify Bichar Code
+        run: grep -q "Bichar Community" lib/main.dart
 
       - name: Get Dependencies
         run: flutter pub get
