@@ -20,7 +20,7 @@ jobs:
       - name: Backup Bichar Code
         run: cp lib/main.dart /tmp/bichar_main.dart
 
-      - name: Create Flutter Android Project
+      - name: Create Android Project
         run: flutter create . --platforms=android --project-name bichar
 
       - name: Restore Bichar Code
@@ -32,7 +32,7 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Build Android APK
+      - name: Build APK
         run: flutter build apk --release
 
       - name: Upload APK
@@ -40,4 +40,5 @@ jobs:
         with:
           name: bichar-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          
           
