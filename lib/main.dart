@@ -31,14 +31,25 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          'Bichar',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Row(
+  children: [
+    Image.asset(
+      'assets/images/logo.jpg',
+      height: 40,
+      width: 40,
+      fit: BoxFit.contain,
+    ),
+    const SizedBox(width: 10),
+    const Text(
+      'Bichar',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 25,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ],
+),
         actions: const [
           Icon(Icons.search, color: Colors.white),
           SizedBox(width: 18),
