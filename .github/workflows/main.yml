@@ -18,9 +18,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Create Flutter Project
-        run: flutter create . --project-name bichar
-
       - name: Get Dependencies
         run: flutter pub get
 
