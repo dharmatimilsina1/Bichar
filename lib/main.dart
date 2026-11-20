@@ -194,7 +194,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class VoiceItPage extends StatelessWidget {
+class VoiceItPage extends StatefulWidget {
   const VoiceItPage({super.key});
   @override
   State<VoiceItPage> createState() => _VoiceItPageState();
