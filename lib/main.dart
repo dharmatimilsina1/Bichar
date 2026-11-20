@@ -390,7 +390,20 @@ class _OpinionPageState extends State<OpinionPage> {
       SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+  final opinion = _opinionController.text.trim();
+
+  if (opinion.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please write your opinion first!'),
+      ),
+    );
+    return;
+  }
+
+  Navigator.pop(context, opinion);
+},
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
