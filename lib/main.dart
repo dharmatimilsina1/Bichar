@@ -201,13 +201,23 @@ class _HomePageState extends State<HomePage> {
                       ),
 
                       TextButton.icon(
-                        onPressed: () {
-  Navigator.push(
+                        onPressed: () async {
+  final opinion = await Navigator.push<String>(
     context,
     MaterialPageRoute(
       builder: (context) => const OpinionPage(),
     ),
   );
+
+  if (!mounted) return;
+
+  if (opinion != null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Your opinion: $opinion'),
+      ),
+    );
+  }
 },
                         icon: const Icon(
                           Icons.chat_bubble_outline,
