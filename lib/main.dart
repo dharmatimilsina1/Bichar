@@ -222,8 +222,9 @@ class _VoiceItPageState extends State<VoiceItPage> {
               ),
             ),
             const SizedBox(height: 15),
-            const TextField(
-              maxLines: 6,
+            TextField(
+  controller: _voiceController,
+  maxLines: 6,
               decoration: InputDecoration(
                 hintText: 'Write your voice here...',
                 border: OutlineInputBorder(),
