@@ -35,8 +35,8 @@ class HomePage extends StatelessWidget {
   children: [
     Image.asset(
       'assets/images/logo (1).jpg',
-      height: 40,
-      width: 40,
+      height: 45,
+      width: 45,
       fit: BoxFit.contain,
     ),
     const SizedBox(width: 10),
