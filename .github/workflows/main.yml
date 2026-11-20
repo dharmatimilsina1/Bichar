@@ -1,4 +1,4 @@
-
+   
 name: Bichar Android Build
 
 on:
@@ -23,6 +23,9 @@ jobs:
       - name: Create Android Project
         run: flutter create . --platforms=android --project-name bichar
 
+      - name: Set Android App Name
+        run: sed -i 's/android:label="[^"]*"/android:label="Bichar"/' android/app/src/main/AndroidManifest.xml
+
       - name: Restore Bichar Code
         run: cp /tmp/bichar_main.dart lib/main.dart
 
@@ -32,6 +35,9 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
+      - name: Generate Launcher Icons
+        run: dart run flutter_launcher_icons
+
       - name: Build APK
         run: flutter build apk --release
 
@@ -40,5 +46,6 @@ jobs:
         with:
           name: bichar-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          
           
           
