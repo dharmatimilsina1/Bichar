@@ -357,6 +357,15 @@ class OpinionPage extends StatefulWidget {
 }
 
 class _OpinionPageState extends State<OpinionPage> {
+  final TextEditingController _opinionController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    _opinionController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
