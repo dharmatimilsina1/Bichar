@@ -379,6 +379,7 @@ class _OpinionPageState extends State<OpinionPage> {
   child: Column(
     children: [
       TextField(
+        controller: _opinionController,
         maxLines: 6,
         decoration: const InputDecoration(
           hintText: 'Write your opinion here...',
