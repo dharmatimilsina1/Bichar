@@ -85,13 +85,22 @@ class HomePage extends StatelessWidget {
                 SizedBox(height: 15),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    'VOICE IT  +',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: InkWell(
+  onTap: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Voice It feature coming soon!'),
+      ),
+    );
+  },
+  child: const Text(
+    'VOICE IT  +',
+    style: TextStyle(
+      color: Colors.red,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
                 ),
               ],
             ),
