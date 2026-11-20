@@ -201,7 +201,14 @@ class _HomePageState extends State<HomePage> {
                       ),
 
                       TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const OpinionPage(),
+    ),
+  );
+},
                         icon: const Icon(
                           Icons.chat_bubble_outline,
                         ),
