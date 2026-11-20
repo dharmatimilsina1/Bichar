@@ -234,7 +234,20 @@ class _VoiceItPageState extends State<VoiceItPage> {
 SizedBox(
   width: double.infinity,
   child: ElevatedButton(
-    onPressed: () {},
+    onPressed: () {
+  final voice = _voiceController.text.trim();
+
+  if (voice.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please write something first!'),
+      ),
+    );
+    return;
+  }
+
+  Navigator.pop(context, voice);
+},
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.red,
       foregroundColor: Colors.white,
