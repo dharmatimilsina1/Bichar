@@ -33,7 +33,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _agreed = false;
   int _agreeCount = 0;
-
+  List<String> _opinions = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
