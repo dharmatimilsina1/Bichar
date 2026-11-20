@@ -365,9 +365,32 @@ class _OpinionPageState extends State<OpinionPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
-      body: const Center(
-        child: Text('Write your opinion here'),
+      body: Padding(
+  padding: const EdgeInsets.all(16),
+  child: Column(
+    children: [
+      TextField(
+        maxLines: 6,
+        decoration: const InputDecoration(
+          hintText: 'Write your opinion here...',
+          border: OutlineInputBorder(),
+        ),
       ),
+      const SizedBox(height: 20),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('SUBMIT OPINION'),
+        ),
+      ),
+    ],
+  ),
+),
     );
   }
 }
