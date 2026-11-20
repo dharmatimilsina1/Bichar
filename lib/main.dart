@@ -210,14 +210,12 @@ class _HomePageState extends State<HomePage> {
   );
 
   if (!mounted) return;
-
-  if (opinion != null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Your opinion: $opinion'),
-      ),
-    );
-  }
+    
+ if (opinion != null) {
+  setState(() {
+    _opinions.add(opinion);
+  });
+ } 
 },
                         icon: const Icon(
                           Icons.chat_bubble_outline,
