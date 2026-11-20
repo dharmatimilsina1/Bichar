@@ -209,6 +209,9 @@ class VoiceItPage extends StatefulWidget {
 }
 
 class _VoiceItPageState extends State<VoiceItPage> {
+  final TextEditingController _voiceController =
+      TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
