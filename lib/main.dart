@@ -34,7 +34,7 @@ class HomePage extends StatelessWidget {
         title: Row(
   children: [
     Image.asset(
-      'assets/images/logo.jpg',
+      'assets/images/logo (1).jpg',
       height: 40,
       width: 40,
       fit: BoxFit.contain,
