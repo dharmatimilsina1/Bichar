@@ -348,3 +348,26 @@ class _VoiceItPageState extends State<VoiceItPage> {
     );
   }
 }
+
+class OpinionPage extends StatefulWidget {
+  const OpinionPage({super.key});
+
+  @override
+  State<OpinionPage> createState() => _OpinionPageState();
+}
+
+class _OpinionPageState extends State<OpinionPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Opinion'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Write your opinion here'),
+      ),
+    );
+  }
+}
