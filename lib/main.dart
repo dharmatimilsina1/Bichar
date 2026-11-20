@@ -23,8 +23,16 @@ class BicharApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _agreed = false;
+  int _agreeCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +40,24 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Row(
-  children: [
-    Image.asset(
-      'assets/images/logo (1).jpg',
-      height: 45,
-      width: 45,
-      fit: BoxFit.contain,
-    ),
-    const SizedBox(width: 10),
-    const Text(
-      'Bichar',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 25,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ],
-),
+          children: [
+            Image.asset(
+              'assets/images/logo (1).jpg',
+              height: 45,
+              width: 45,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Bichar',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         actions: const [
           Icon(Icons.search, color: Colors.white),
           SizedBox(width: 18),
@@ -57,6 +65,7 @@ class HomePage extends StatelessWidget {
           SizedBox(width: 15),
         ],
       ),
+
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -66,10 +75,10 @@ class HomePage extends StatelessWidget {
               color: Colors.black,
               borderRadius: BorderRadius.circular(14),
             ),
-            child:  Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'आफ्नो विचार व्यक्त गर्नुहोस्',
                   style: TextStyle(
                     color: Colors.white,
@@ -77,44 +86,50 @@ class HomePage extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 12),
-                Text(
+                const SizedBox(height: 12),
+                const Text(
                   'What is on your mind?',
                   style: TextStyle(color: Colors.white70),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 Align(
                   alignment: Alignment.centerRight,
                   child: InkWell(
-  onTap: () async {
-  final voice = await Navigator.push<String>(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const VoiceItPage(),
-    ),
-  );
+                    onTap: () async {
+                      final voice = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const VoiceItPage(),
+                        ),
+                      );
 
-  if (voice != null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Your voice: $voice'),
-      ),
-    );
-  }
-},
-  child: const Text(
-    'VOICE IT  +',
-    style: TextStyle(
-      color: Colors.red,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-),
+                      if (!mounted) return;
+
+                      if (voice != null) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(
+                          SnackBar(
+                            content: Text('Your voice: $voice'),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      'VOICE IT  +',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+
           const SizedBox(height: 25),
+
           const Text(
             'Voices',
             style: TextStyle(
@@ -123,7 +138,9 @@ class HomePage extends StatelessWidget {
               color: Colors.black,
             ),
           ),
+
           const SizedBox(height: 15),
+
           Card(
             color: Colors.white,
             child: Padding(
@@ -138,29 +155,64 @@ class HomePage extends StatelessWidget {
                       fontSize: 17,
                     ),
                   ),
+
                   const SizedBox(height: 10),
+
                   const Text(
                     'विचार परिवर्तनको सुरुवात हो। '
                     'आफ्नो विचार राख्नुहोस् र अरूका विचार पनि सुन्नुहोस्।',
                     style: TextStyle(fontSize: 16),
                   ),
+
                   const SizedBox(height: 15),
+
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceAround,
                     children: [
                       TextButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.thumb_up_outlined),
-                        label: const Text('Agree'),
+                        onPressed: () {
+                          setState(() {
+                            _agreed = !_agreed;
+
+                            if (_agreed) {
+                              _agreeCount++;
+                            } else {
+                              _agreeCount--;
+                            }
+                          });
+                        },
+                        icon: Icon(
+                          _agreed
+                              ? Icons.thumb_up
+                              : Icons.thumb_up_outlined,
+                          color: _agreed
+                              ? Colors.red
+                              : Colors.black54,
+                        ),
+                        label: Text(
+                          'Agree $_agreeCount',
+                          style: TextStyle(
+                            color: _agreed
+                                ? Colors.red
+                                : Colors.black87,
+                          ),
+                        ),
                       ),
+
                       TextButton.icon(
                         onPressed: () {},
-                        icon: const Icon(Icons.chat_bubble_outline),
+                        icon: const Icon(
+                          Icons.chat_bubble_outline,
+                        ),
                         label: const Text('Opinion'),
                       ),
+
                       TextButton.icon(
                         onPressed: () {},
-                        icon: const Icon(Icons.share_outlined),
+                        icon: const Icon(
+                          Icons.share_outlined,
+                        ),
                         label: const Text('Spread'),
                       ),
                     ],
@@ -171,6 +223,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.red,
@@ -204,6 +257,7 @@ class HomePage extends StatelessWidget {
 
 class VoiceItPage extends StatefulWidget {
   const VoiceItPage({super.key});
+
   @override
   State<VoiceItPage> createState() => _VoiceItPageState();
 }
@@ -213,6 +267,12 @@ class _VoiceItPageState extends State<VoiceItPage> {
       TextEditingController();
 
   @override
+  void dispose() {
+    _voiceController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -220,6 +280,7 @@ class _VoiceItPageState extends State<VoiceItPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -232,40 +293,48 @@ class _VoiceItPageState extends State<VoiceItPage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 15),
+
             TextField(
-  controller: _voiceController,
-  maxLines: 6,
-              decoration: InputDecoration(
+              controller: _voiceController,
+              maxLines: 6,
+              decoration: const InputDecoration(
                 hintText: 'Write your voice here...',
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 20),
-SizedBox(
-  width: double.infinity,
-  child: ElevatedButton(
-    onPressed: () {
-  final voice = _voiceController.text.trim();
 
-  if (voice.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please write something first!'),
-      ),
-    );
-    return;
-  }
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  final voice =
+                      _voiceController.text.trim();
 
-  Navigator.pop(context, voice);
-},
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.red,
-      foregroundColor: Colors.white,
-    ),
-    child: const Text('VOICE IT +'),
-  ),
-),
+                  if (voice.isEmpty) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Please write something first!',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(context, voice);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('VOICE IT +'),
+              ),
+            ),
           ],
         ),
       ),
