@@ -66,7 +66,7 @@ class HomePage extends StatelessWidget {
               color: Colors.black,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Column(
+            child:  Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
