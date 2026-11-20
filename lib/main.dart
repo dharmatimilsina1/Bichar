@@ -87,12 +87,13 @@ class HomePage extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: InkWell(
   onTap: () {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voice It feature coming soon!'),
-      ),
-    );
-  },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const VoiceItPage(),
+    ),
+  );
+},
   child: const Text(
     'VOICE IT  +',
     style: TextStyle(
