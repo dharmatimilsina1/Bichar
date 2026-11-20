@@ -86,13 +86,21 @@ class HomePage extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: InkWell(
-  onTap: () {
-  Navigator.push(
+  onTap: () async {
+  final voice = await Navigator.push<String>(
     context,
     MaterialPageRoute(
       builder: (context) => const VoiceItPage(),
     ),
   );
+
+  if (voice != null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Your voice: $voice'),
+      ),
+    );
+  }
 },
   child: const Text(
     'VOICE IT  +',
