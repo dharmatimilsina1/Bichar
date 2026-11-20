@@ -165,6 +165,23 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   const SizedBox(height: 15),
+                  if (_opinions.isNotEmpty) ...[
+  const Divider(),
+  const Text(
+    'Opinions',
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+  const SizedBox(height: 8),
+  ..._opinions.map(
+    (opinion) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text('• $opinion'),
+    ),
+  ),
+],
 
                   Row(
                     mainAxisAlignment:
