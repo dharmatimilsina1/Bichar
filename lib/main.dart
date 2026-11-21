@@ -883,3 +883,676 @@ class PostCard extends StatelessWidget {
 }
 
 // भाग २ समाप्त
+
+// VOICE IT PAGE
+
+class VoiceItPage extends StatefulWidget {
+  const VoiceItPage({super.key});
+
+  @override
+  State<VoiceItPage> createState() => _VoiceItPageState();
+}
+
+class _VoiceItPageState extends State<VoiceItPage> {
+  final controller = TextEditingController();
+
+  void submit() {
+    final text = controller.text.trim();
+
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('पहिले आफ्नो विचार लेख्नुहोस्')),
+      );
+      return;
+    }
+
+    Navigator.pop(context, text);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Voice It'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: controller,
+              maxLines: 8,
+              maxLength: 2000,
+              decoration: const InputDecoration(
+                hintText: 'Share your thoughts...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('VOICE IT'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// OPINION PAGE
+
+class OpinionPage extends StatefulWidget {
+  const OpinionPage({super.key});
+
+  @override
+  State<OpinionPage> createState() => _OpinionPageState();
+}
+
+class _OpinionPageState extends State<OpinionPage> {
+  final controller = TextEditingController();
+
+  void submit() {
+    final text = controller.text.trim();
+
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('पहिले आफ्नो Opinion लेख्नुहोस्')),
+      );
+      return;
+    }
+
+    Navigator.pop(context, text);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Opinion'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: controller,
+              maxLines: 7,
+              maxLength: 1500,
+              decoration: const InputDecoration(
+                hintText: 'Write your opinion...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('SUBMIT OPINION'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// IDENTITY PAGE
+
+class IdentityPage extends StatelessWidget {
+  const IdentityPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Center(child: Text('Login गर्नुहोस्'));
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final data = snapshot.data?.data() ?? {};
+        final name = data['name']?.toString() ??
+            user.displayName ??
+            'User';
+        final email = data['email']?.toString() ?? user.email ?? '';
+
+        return ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const SizedBox(height: 25),
+            const Center(
+              child: CircleAvatar(
+                radius: 48,
+                backgroundColor: Color(0xFFFFDAD6),
+                child: Icon(
+                  Icons.person,
+                  size: 55,
+                  color: Colors.brown,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Center(
+              child: Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Center(
+              child: Text(
+                email,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 25),
+            const Divider(),
+            const ListTile(
+              leading: Icon(Icons.person_outline),
+              title: Text('Identity'),
+              subtitle: Text('Your Bichar account'),
+            ),
+            const Divider(),
+            const Text(
+              'Your Voices',
+              style: TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('posts')
+                  .where('uid', isEqualTo: user.uid)
+                  .snapshots(),
+              builder: (context, postSnapshot) {
+                if (postSnapshot.hasError) {
+                  return const Text('पोस्ट देखाउन समस्या भयो');
+                }
+
+                if (!postSnapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                final posts = postSnapshot.data!.docs;
+
+                if (posts.isEmpty) {
+                  return const Text('तपाईंले अहिलेसम्म पोस्ट गर्नुभएको छैन।');
+                }
+
+                return Column(
+                  children: posts.map((post) {
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.forum_outlined,
+                          color: Colors.red,
+                        ),
+                        title: Text(
+                          post.data()['text']?.toString() ?? '',
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// SETTINGS PAGE
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  Future<void> editName(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final controller = TextEditingController(
+      text: user.displayName ?? '',
+    );
+
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Identity'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Your Name',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('CANCEL'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text('SAVE'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (newName == null || newName.isEmpty) return;
+
+    try {
+      await user.updateDisplayName(newName);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({'name': newName});
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('नाम परिवर्तन भयो')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('नाम परिवर्तन गर्न सकिएन')),
+        );
+      }
+    }
+  }
+
+  Future<void> resetPassword(BuildContext context) async {
+    final email = FirebaseAuth.instance.currentUser?.email;
+
+    if (email == null) return;
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: email,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$email मा Password Reset Email पठाइयो'),
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'समस्या भयो')),
+        );
+      }
+    }
+  }
+
+  Future<void> logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('के तपाईं Logout गर्न चाहनुहुन्छ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('CANCEL'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('LOGOUT'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await FirebaseAuth.instance.signOut();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.edit, color: Colors.red),
+            title: const Text('Edit Identity'),
+            subtitle: const Text('Change your name'),
+            onTap: () => editName(context),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.lock_outline, color: Colors.red),
+            title: const Text('Change Password'),
+            subtitle: const Text('Receive password reset email'),
+            onTap: () => resetPassword(context),
+          ),
+          const Divider(),
+          const ListTile(
+            leading: Icon(Icons.privacy_tip_outlined, color: Colors.red),
+            title: Text('Privacy Settings'),
+            subtitle: Text('Privacy information'),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout'),
+            onTap: () => logout(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// EXPLORES PAGE
+
+class ExplorePage extends StatefulWidget {
+  const ExplorePage({super.key});
+
+  @override
+  State<ExplorePage> createState() => _ExplorePageState();
+}
+
+class _ExplorePageState extends State<ExplorePage> {
+  final searchController = TextEditingController();
+  String searchText = '';
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: searchController,
+            onChanged: (value) {
+              setState(() {
+                searchText = value.trim().toLowerCase();
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'Search Voices...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('posts')
+                .orderBy('createdAt', descending: true)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text('खोज्न समस्या भयो'),
+                );
+              }
+
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final posts = snapshot.data!.docs.where((post) {
+                final text = post.data()['text']
+                    ?.toString()
+                    .toLowerCase() ?? '';
+                final name = post.data()['name']
+                    ?.toString()
+                    .toLowerCase() ?? '';
+
+                return text.contains(searchText) ||
+                    name.contains(searchText);
+              }).toList();
+
+              if (posts.isEmpty) {
+                return const Center(
+                  child: Text('कुनै Voice भेटिएन'),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: posts.length,
+                itemBuilder: (context, index) {
+                  final data = posts[index].data();
+
+                  return Card(
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(Icons.person),
+                      ),
+                      title: Text(data['name'] ?? 'User'),
+                      subtitle: Text(data['text'] ?? ''),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// TOP DEBATES PAGE
+
+class TopDebatesPage extends StatelessWidget {
+  const TopDebatesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('Top Debates लोड गर्न समस्या भयो'),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final posts = snapshot.data!.docs.toList();
+
+        posts.sort((a, b) {
+          final aCount =
+              (a.data()['agreedBy'] as List?)?.length ?? 0;
+          final bCount =
+              (b.data()['agreedBy'] as List?)?.length ?? 0;
+
+          return bCount.compareTo(aCount);
+        });
+
+        if (posts.isEmpty) {
+          return const Center(
+            child: Text('अहिलेसम्म कुनै Debate छैन'),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            final data = posts[index].data();
+            final count =
+                (data['agreedBy'] as List?)?.length ?? 0;
+
+            return Card(
+              color: const Color(0xFFFFF0EF),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.trending_up,
+                  color: Colors.red,
+                ),
+                title: Text(data['text'] ?? ''),
+                subtitle: Text(
+                  '${data['name'] ?? 'User'} · Agree ($count)',
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ACTIVITY PAGE
+
+class ActivityPage extends StatelessWidget {
+  const ActivityPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Center(child: Text('Login गर्नुहोस्'));
+    }
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .where('uid', isEqualTo: user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('Activity लोड गर्न समस्या भयो'),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final posts = snapshot.data!.docs;
+
+        if (posts.isEmpty) {
+          return const Center(
+            child: Text('अहिलेसम्म कुनै Activity छैन'),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text(
+              'Your Recent Voices',
+              style: TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...posts.map((post) {
+              final data = post.data();
+
+              return Card(
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.history,
+                    color: Colors.red,
+                  ),
+                  title: Text(data['text'] ?? ''),
+                  subtitle: const Text('Your Voice'),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// भाग ३ समाप्त
