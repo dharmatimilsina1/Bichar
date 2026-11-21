@@ -576,6 +576,13 @@ class _LoginPageState extends State<LoginPage> {
                 border: OutlineInputBorder(),
               ),
             ),
+            TextButton(
+  onPressed: _resetPassword,
+  child: const Text(
+    'Forgot Password?',
+    style: TextStyle(color: Colors.red),
+  ),
+),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
