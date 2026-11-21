@@ -886,6 +886,7 @@ class PostCard extends StatelessWidget {
 
 // VOICE IT PAGE
 
+
 class VoiceItPage extends StatefulWidget {
   const VoiceItPage({super.key});
 
@@ -895,13 +896,42 @@ class VoiceItPage extends StatefulWidget {
 
 class _VoiceItPageState extends State<VoiceItPage> {
   final controller = TextEditingController();
+  final ImagePicker picker = ImagePicker();
+
+  XFile? selectedImage;
+  bool loading = false;
+
+  Future<void> pickImage() async {
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null && mounted) {
+        setState(() {
+          selectedImage = image;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('फोटो छान्न सकिएन'),
+          ),
+        );
+      }
+    }
+  }
 
   void submit() {
     final text = controller.text.trim();
 
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('पहिले आफ्नो विचार लेख्नुहोस्')),
+        const SnackBar(
+          content: Text('पहिले आफ्नो विचार लेख्नुहोस्'),
+        ),
       );
       return;
     }
@@ -923,9 +953,10 @@ class _VoiceItPageState extends State<VoiceItPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: controller,
@@ -936,17 +967,50 @@ class _VoiceItPageState extends State<VoiceItPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('VOICE IT'),
+
+            const SizedBox(height: 12),
+
+            OutlinedButton.icon(
+              onPressed: loading ? null : pickImage,
+              icon: const Icon(
+                Icons.photo_library_outlined,
+                color: Colors.red,
               ),
+              label: const Text('Add Photo from Gallery'),
+            ),
+
+            if (selectedImage != null) ...[
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(selectedImage!.path),
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    selectedImage = null;
+                  });
+                },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Remove Photo'),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: loading ? null : submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: const Text('VOICE IT'),
             ),
           ],
         ),
@@ -954,6 +1018,7 @@ class _VoiceItPageState extends State<VoiceItPage> {
     );
   }
 }
+
 
 // OPINION PAGE
 
