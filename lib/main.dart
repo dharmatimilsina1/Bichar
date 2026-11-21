@@ -419,3 +419,325 @@ class _SignupPageState extends State<SignupPage> {
 
 // भाग १ समाप्त
             
+
+
+ 
+// HOME PAGE
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  int _agreeCount = 0;
+
+  final List<String> _opinions = [];
+
+  final List<String> _titles = [
+    'Ghar',
+    'Search',
+    'Top Debate',
+    'Alerts',
+    'Identity',
+  ];
+
+  void _addOpinion(String opinion) {
+    setState(() {
+      _opinions.add(opinion);
+    });
+  }
+
+  void _openVoiceIt() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const VoiceItPage(),
+      ),
+    );
+
+    if (result != null && result.trim().isNotEmpty) {
+      setState(() {
+        _opinions.add(result.trim());
+      });
+    }
+  }
+
+  Widget _buildHomeContent() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/logo (1).jpg',
+                  width: 45,
+                  height: 45,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const CircleAvatar(
+                      radius: 22,
+                      child: Icon(Icons.forum),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Bichar',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                },
+                icon: const Icon(Icons.logout),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            'Welcome, ${user?.displayName ?? 'User'}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          GestureDetector(
+            onTap: _openVoiceIt,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.edit, color: Colors.red),
+                  SizedBox(width: 10),
+                  Text(
+                    'What is on your mind? Voice it...',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 25),
+
+          const Text(
+            'Voices',
+            style: TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      CircleAvatar(
+                        child: Icon(Icons.person),
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Bichar Community',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  const Text(
+                    'विचार परिवर्तनको सुरुवात हो। '
+                    'आफ्नो विचार राख्नुहोस् र अरूका विचारलाई सम्मान गर्नुहोस्।',
+                    style: TextStyle(fontSize: 16),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _agreeCount++;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.thumb_up_alt_outlined,
+                          color: Colors.red,
+                        ),
+                        label: Text('Agree ($_agreeCount)'),
+                      ),
+
+                      TextButton.icon(
+                        onPressed: () async {
+                          final opinion =
+                              await Navigator.push<String>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const OpinionPage(),
+                            ),
+                          );
+
+                          if (opinion != null &&
+                              opinion.trim().isNotEmpty) {
+                            _addOpinion(opinion.trim());
+                          }
+                        },
+                        icon: const Icon(Icons.chat_bubble_outline),
+                        label: const Text('Opinion'),
+                      ),
+
+                      TextButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Spread feature coming soon',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.share_outlined),
+                        label: const Text('Spread'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (_opinions.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            const Text(
+              'Your Voices',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ..._opinions.map(
+              (opinion) => Card(
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.person,
+                    color: Colors.red,
+                  ),
+                  title: Text(opinion),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOtherPage() {
+    return Center(
+      child: Text(
+        _titles[_selectedIndex],
+        style: const TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_titles[_selectedIndex]),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+
+      body: _selectedIndex == 0
+          ? _buildHomeContent()
+          : _buildOtherPage(),
+
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: _openVoiceIt,
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              child: const Icon(Icons.add),
+            )
+          : null,
+
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Ghar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.trending_up),
+            label: 'Top Debate',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Alerts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Identity',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// भाग २ समाप्त
