@@ -1,1 +1,29 @@
-
+{
+  "project_info": {
+    "project_number": "648961058480",
+    "project_id": "bichar-ec3cb",
+    "storage_bucket": "bichar-ec3cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:648961058480:android:7bb034b16a2f70d6e57d75",
+        "android_client_info": {
+          "package_name": "com.example.bichar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkEm5dIMxYgosgrgQkyCGrHQVMRGojiUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
