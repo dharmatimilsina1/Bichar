@@ -741,3 +741,151 @@ class _HomePageState extends State<HomePage> {
 }
 
 // भाग २ समाप्त
+
+
+
+// VOICE IT PAGE
+
+class VoiceItPage extends StatefulWidget {
+  const VoiceItPage({super.key});
+
+  @override
+  State<VoiceItPage> createState() => _VoiceItPageState();
+}
+
+class _VoiceItPageState extends State<VoiceItPage> {
+  final _voiceController = TextEditingController();
+
+  @override
+  void dispose() {
+    _voiceController.dispose();
+    super.dispose();
+  }
+
+  void _submitVoice() {
+    final voice = _voiceController.text.trim();
+
+    if (voice.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write something first'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context, voice);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Voice It'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: _voiceController,
+              maxLines: 7,
+              decoration: const InputDecoration(
+                hintText: 'Share your thoughts...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submitVoice,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('VOICE IT'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// OPINION PAGE
+
+class OpinionPage extends StatefulWidget {
+  const OpinionPage({super.key});
+
+  @override
+  State<OpinionPage> createState() => _OpinionPageState();
+}
+
+class _OpinionPageState extends State<OpinionPage> {
+  final _opinionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _opinionController.dispose();
+    super.dispose();
+  }
+
+  void _submitOpinion() {
+    final opinion = _opinionController.text.trim();
+
+    if (opinion.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write your opinion first'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context, opinion);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Opinion'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: _opinionController,
+              maxLines: 6,
+              decoration: const InputDecoration(
+                hintText: 'Write your opinion...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submitOpinion,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('SUBMIT OPINION'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// MAIN.DART समाप्त
