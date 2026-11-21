@@ -22,7 +22,7 @@ class BicharApp extends StatelessWidget {
         colorSchemeSeed: const Color(0xFFE50914),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const AuthGate(),
     );
   }
 }
