@@ -1,4 +1,5 @@
-   
+
+
 name: Bichar Android Build
 
 on:
@@ -22,8 +23,45 @@ jobs:
 
       - name: Create Android Project
         run: flutter create . --platforms=android --project-name bichar
+
+      - name: Verify Firebase Config
+        run: test -f android/app/google-services.json
+
+      - name: Configure Firebase
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          settings = Path("android/settings.gradle.kts")
+          content = settings.read_text()
+
+          plugin = '    id("com.google.gms.google-services") version "4.4.2" apply false'
+
+          if "com.google.gms.google-services" not in content:
+              content = content.replace(
+                  "plugins {",
+                  "plugins {\n" + plugin,
+                  1
+              )
+              settings.write_text(content)
+
+          app = Path("android/app/build.gradle.kts")
+          content = app.read_text()
+
+          app_plugin = '    id("com.google.gms.google-services")'
+
+          if "com.google.gms.google-services" not in content:
+              content = content.replace(
+                  "plugins {",
+                  "plugins {\n" + app_plugin,
+                  1
+              )
+              app.write_text(content)
+          PY
+
       - name: Show Android Package Name
         run: grep applicationId android/app/build.gradle.kts
+
       - name: Set Android App Name
         run: sed -i 's/android:label="[^"]*"/android:label="Bichar"/' android/app/src/main/AndroidManifest.xml
 
@@ -47,6 +85,4 @@ jobs:
         with:
           name: bichar-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          
-          
           
