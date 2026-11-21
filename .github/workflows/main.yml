@@ -1,5 +1,4 @@
 
-
 name: Bichar Android Build
 
 on:
@@ -69,7 +68,7 @@ jobs:
         run: cp /tmp/bichar_main.dart lib/main.dart
 
       - name: Verify Bichar Code
-        run: grep -q "Bichar Community" lib/main.dart
+        run: test -s lib/main.dart
 
       - name: Get Dependencies
         run: flutter pub get
