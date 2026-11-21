@@ -555,6 +555,20 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: Text(_loading ? 'Please wait...' : 'LOGIN'),
               ),
+              TextButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SignupPage(),
+      ),
+    );
+  },
+  child: const Text(
+    'Create New Account',
+    style: TextStyle(color: Colors.red),
+  ),
+),
             ),
           ],
         ),
