@@ -1,13 +1,16 @@
-    
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const BicharApp());
 }
+
+// BICHAR APP
 
 class BicharApp extends StatelessWidget {
   const BicharApp({super.key});
@@ -71,8 +74,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
 
   Future<void> _login() async {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter email and password'),
@@ -85,8 +90,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -102,8 +107,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
-
-  // FORGOT PASSWORD
 
   Future<void> _resetPassword() async {
     final email = _emailController.text.trim();
@@ -187,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: _resetPassword,
+                onPressed: _loading ? null : _resetPassword,
                 child: const Text(
                   'Forgot Password?',
                   style: TextStyle(color: Colors.red),
@@ -212,14 +215,16 @@ class _LoginPageState extends State<LoginPage> {
             ),
 
             TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SignupPage(),
-                  ),
-                );
-              },
+              onPressed: _loading
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupPage(),
+                        ),
+                      );
+                    },
               child: const Text(
                 'Create New Account',
                 style: TextStyle(color: Colors.red),
@@ -273,6 +278,8 @@ class _SignupPageState extends State<SignupPage> {
 
     setState(() => _loading = true);
 
+    User? newUser;
+
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -280,9 +287,31 @@ class _SignupPageState extends State<SignupPage> {
         password: password,
       );
 
-      await credential.user?.updateDisplayName(name);
+      newUser = credential.user;
+
+      if (newUser == null) {
+        throw Exception('Account creation failed');
+      }
+
+      await newUser.updateDisplayName(name);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(newUser.uid)
+          .set({
+        'uid': newUser.uid,
+        'name': name,
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully!'),
+          ),
+        );
+
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
@@ -290,6 +319,34 @@ class _SignupPageState extends State<SignupPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.message ?? 'Signup failed'),
+          ),
+        );
+      }
+    } on FirebaseException catch (e) {
+      // If saving the profile fails, remove the newly
+      // created account to avoid an incomplete signup.
+      if (newUser != null) {
+        try {
+          await newUser.delete();
+        } catch (_) {
+          // Account cleanup may require recent authentication.
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.message ?? 'Could not save user profile',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong'),
           ),
         );
       }
@@ -324,6 +381,7 @@ class _SignupPageState extends State<SignupPage> {
 
             TextField(
               controller: _nameController,
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
                 labelText: 'Full Name',
                 border: OutlineInputBorder(),
@@ -388,10 +446,27 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _agreed = false;
   int _agreeCount = 0;
+
   final List<String> _opinions = [];
+
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not log out'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -402,6 +477,13 @@ class _HomePageState extends State<HomePage> {
               height: 45,
               width: 45,
               fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.forum,
+                  color: Colors.white,
+                  size: 35,
+                );
+              },
             ),
             const SizedBox(width: 10),
             const Text(
@@ -414,17 +496,31 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        actions: const [
-          Icon(Icons.search, color: Colors.white),
-          SizedBox(width: 18),
-          Icon(Icons.notifications_none, color: Colors.white),
-          SizedBox(width: 15),
+        actions: [
+          IconButton(
+            tooltip: 'Logout',
+            onPressed: _logout,
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
 
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text(
+            'Welcome, ${user?.displayName ?? 'User'}',
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -474,7 +570,7 @@ class _HomePageState extends State<HomePage> {
                       }
                     },
                     child: const Text(
-                      'VOICE IT  +',
+                      'VOICE IT +',
                       style: TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -561,7 +657,9 @@ class _HomePageState extends State<HomePage> {
                           _agreed
                               ? Icons.thumb_up
                               : Icons.thumb_up_outlined,
-                          color: _agreed ? Colors.red : Colors.black54,
+                          color: _agreed
+                              ? Colors.red
+                              : Colors.black54,
                         ),
                         label: Text(
                           'Agree $_agreeCount',
@@ -598,7 +696,13 @@ class _HomePageState extends State<HomePage> {
                       ),
 
                       TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Spread feature coming soon'),
+                            ),
+                          );
+                        },
                         icon: const Icon(Icons.share_outlined),
                         label: const Text('Spread'),
                       ),
@@ -625,178 +729,5 @@ class _HomePageState extends State<HomePage> {
             label: 'Search',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
-            label: 'Top Debate',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Identity',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// VOICE IT PAGE
-
-class VoiceItPage extends StatefulWidget {
-  const VoiceItPage({super.key});
-
-  @override
-  State<VoiceItPage> createState() => _VoiceItPageState();
-}
-
-class _VoiceItPageState extends State<VoiceItPage> {
-  final TextEditingController _voiceController =
-      TextEditingController();
-
-  @override
-  void dispose() {
-    _voiceController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Voice It'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'What is on your mind?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            TextField(
-              controller: _voiceController,
-              maxLines: 6,
-              decoration: const InputDecoration(
-                hintText: 'Write your voice here...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final voice = _voiceController.text.trim();
-
-                  if (voice.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please write something first!',
-                        ),
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.pop(context, voice);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('VOICE IT +'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
- // OPINION PAGE
-
-class OpinionPage extends StatefulWidget {
-  const OpinionPage({super.key});
-
-  @override
-  State<OpinionPage> createState() => _OpinionPageState();
-}
-
-class _OpinionPageState extends State<OpinionPage> {
-  final TextEditingController _opinionController =
-      TextEditingController();
-
-  @override
-  void dispose() {
-    _opinionController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Opinion'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _opinionController,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                hintText: 'Write your opinion...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  final opinion =
-                      _opinionController.text.trim();
-
-                  if (opinion.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please write your opinion'),
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.pop(context, opinion);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('SUBMIT OPINION'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+        
 
