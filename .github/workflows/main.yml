@@ -23,7 +23,7 @@ jobs:
       - name: Create Android Project
         run: flutter create . --platforms=android --project-name bichar
       - name: Show Android Package Name
-        run: grep applicationId android/app/build.gradle
+        run: grep applicationId android/app/build.gradle.kts
       - name: Set Android App Name
         run: sed -i 's/android:label="[^"]*"/android:label="Bichar"/' android/app/src/main/AndroidManifest.xml
 
