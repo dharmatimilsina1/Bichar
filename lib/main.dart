@@ -1,4 +1,5 @@
 
+  
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -166,7 +167,6 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 80),
-
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -175,9 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: _passwordController,
               obscureText: true,
@@ -186,7 +184,6 @@ class _LoginPageState extends State<LoginPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -197,9 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 10),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -213,7 +208,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-
             TextButton(
               onPressed: _loading
                   ? null
@@ -323,14 +317,10 @@ class _SignupPageState extends State<SignupPage> {
         );
       }
     } on FirebaseException catch (e) {
-      // If saving the profile fails, remove the newly
-      // created account to avoid an incomplete signup.
       if (newUser != null) {
         try {
           await newUser.delete();
-        } catch (_) {
-          // Account cleanup may require recent authentication.
-        }
+        } catch (_) {}
       }
 
       if (mounted) {
@@ -378,7 +368,6 @@ class _SignupPageState extends State<SignupPage> {
         child: Column(
           children: [
             const SizedBox(height: 50),
-
             TextField(
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
@@ -387,9 +376,7 @@ class _SignupPageState extends State<SignupPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -398,9 +385,7 @@ class _SignupPageState extends State<SignupPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 15),
-
             TextField(
               controller: _passwordController,
               obscureText: true,
@@ -409,9 +394,7 @@ class _SignupPageState extends State<SignupPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 20),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -434,300 +417,5 @@ class _SignupPageState extends State<SignupPage> {
   }
 }
 
-// HOME PAGE
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  bool _agreed = false;
-  int _agreeCount = 0;
-
-  final List<String> _opinions = [];
-
-  Future<void> _logout() async {
-    try {
-      await FirebaseAuth.instance.signOut();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not log out'),
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/logo (1).jpg',
-              height: 45,
-              width: 45,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.forum,
-                  color: Colors.white,
-                  size: 35,
-                );
-              },
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Bichar',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Logout',
-            onPressed: _logout,
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Welcome, ${user?.displayName ?? 'User'}',
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'आफ्नो विचार व्यक्त गर्नुहोस्',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'What is on your mind?',
-                  style: TextStyle(color: Colors.white70),
-                ),
-
-                const SizedBox(height: 15),
-
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: InkWell(
-                    onTap: () async {
-                      final voice = await Navigator.push<String>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const VoiceItPage(),
-                        ),
-                      );
-
-                      if (!mounted) return;
-
-                      if (voice != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Your voice: $voice'),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      'VOICE IT +',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
-          const Text(
-            'Voices',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          Card(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Bichar Community',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    'विचार परिवर्तनको सुरुवात हो। '
-                    'आफ्नो विचार राख्नुहोस् र अरूका विचार पनि सुन्नुहोस्।',
-                    style: TextStyle(fontSize: 16),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  if (_opinions.isNotEmpty) ...[
-                    const Divider(),
-                    const Text(
-                      'Opinions',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ..._opinions.map(
-                      (opinion) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text('• $opinion'),
-                      ),
-                    ),
-                  ],
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _agreed = !_agreed;
-
-                            if (_agreed) {
-                              _agreeCount++;
-                            } else {
-                              _agreeCount--;
-                            }
-                          });
-                        },
-                        icon: Icon(
-                          _agreed
-                              ? Icons.thumb_up
-                              : Icons.thumb_up_outlined,
-                          color: _agreed
-                              ? Colors.red
-                              : Colors.black54,
-                        ),
-                        label: Text(
-                          'Agree $_agreeCount',
-                          style: TextStyle(
-                            color: _agreed
-                                ? Colors.red
-                                : Colors.black87,
-                          ),
-                        ),
-                      ),
-
-                      TextButton.icon(
-                        onPressed: () async {
-                          final opinion =
-                              await Navigator.push<String>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const OpinionPage(),
-                            ),
-                          );
-
-                          if (!mounted) return;
-
-                          if (opinion != null) {
-                            setState(() {
-                              _opinions.add(opinion);
-                            });
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.chat_bubble_outline,
-                        ),
-                        label: const Text('Opinion'),
-                      ),
-
-                      TextButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Spread feature coming soon'),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.share_outlined),
-                        label: const Text('Spread'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black54,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Ghar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-        
-
+// भाग १ समाप्त
+            
