@@ -475,7 +475,39 @@ class AuthGate extends StatelessWidget {
 }
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
 
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email first'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: email,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password reset email sent'),
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Something went wrong')),
+        );
+      }
+    }
+  }
+  
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
