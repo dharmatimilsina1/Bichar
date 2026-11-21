@@ -728,10 +728,75 @@ class _VoiceItPageState extends State<VoiceItPage> {
   }
 }
 
-// OPINION PAGE
+ // OPINION PAGE
 
 class OpinionPage extends StatefulWidget {
   const OpinionPage({super.key});
 
   @override
-  St
+  State<OpinionPage> createState() => _OpinionPageState();
+}
+
+class _OpinionPageState extends State<OpinionPage> {
+  final TextEditingController _opinionController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    _opinionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Opinion'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _opinionController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                hintText: 'Write your opinion...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  final opinion =
+                      _opinionController.text.trim();
+
+                  if (opinion.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please write your opinion'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(context, opinion);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('SUBMIT OPINION'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
