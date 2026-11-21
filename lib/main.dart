@@ -1,7 +1,6 @@
-
+    
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
@@ -38,8 +37,7 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState ==
-            ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
@@ -390,7 +388,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _agreed = false;
   int _agreeCount = 0;
-  List<String> _opinions = [];
+  final List<String> _opinions = [];
 
   @override
   Widget build(BuildContext context) {
@@ -461,8 +459,7 @@ class _HomePageState extends State<HomePage> {
                       final voice = await Navigator.push<String>(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const VoiceItPage(),
+                          builder: (context) => const VoiceItPage(),
                         ),
                       );
 
@@ -582,8 +579,7 @@ class _HomePageState extends State<HomePage> {
                               await Navigator.push<String>(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const OpinionPage(),
+                              builder: (context) => const OpinionPage(),
                             ),
                           );
 
@@ -728,4 +724,14 @@ class _VoiceItPageState extends State<VoiceItPage> {
           ],
         ),
       ),
-      
+    );
+  }
+}
+
+// OPINION PAGE
+
+class OpinionPage extends StatefulWidget {
+  const OpinionPage({super.key});
+
+  @override
+  St
