@@ -445,23 +445,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void spreadPost(String text) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Spread this Voice'),
-          content: SelectableText(text),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('CLOSE'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    Future<void> spreadPost(String text) async {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: text,
+          title: 'Bichar - Spread this Voice',
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        showMessage('पोस्ट Share गर्न सकिएन');
+      }
+    }
+    }
 
   Widget buildGhar() {
     final user = FirebaseAuth.instance.currentUser;
