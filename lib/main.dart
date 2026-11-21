@@ -366,33 +366,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> openVoiceIt() async {
-    final result = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const VoiceItPage(),
-      ),
-    );
+  
+Future<void> openVoiceIt() async {
+  final result = await Navigator.push<Map<String, dynamic>>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const VoiceItPage(),
+    ),
+  );
 
-    if (result == null || result.trim().isEmpty) return;
+  if (result == null) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+  final text = result['text']?.toString().trim() ?? '';
+  final photoPath = result['photoPath']?.toString();
 
-    try {
-      await FirebaseFirestore.instance.collection('posts').add({
-        'uid': user.uid,
-        'name': user.displayName ?? 'User',
-        'text': result.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'agreedBy': [],
-      });
+  if (text.isEmpty) return;
 
-      if (mounted) showMessage('तपाईंको विचार प्रकाशित भयो');
-    } catch (e) {
-      if (mounted) showMessage('पोस्ट सुरक्षित गर्न सकिएन: $e');
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  try {
+    await FirebaseFirestore.instance.collection('posts').add({
+      'uid': user.uid,
+      'name': user.displayName ?? 'User',
+      'text': text,
+      'photoPath': photoPath,
+      'createdAt': FieldValue.serverTimestamp(),
+      'agreedBy': [],
+    });
+
+    if (mounted) showMessage('तपाईंको विचार प्रकाशित भयो');
+  } catch (e) {
+    if (mounted) {
+      showMessage('पोस्ट सुरक्षित गर्न सकिएन: $e');
     }
   }
+}
+  
 
   Future<void> openOpinion(String postId) async {
     final result = await Navigator.push<String>(
