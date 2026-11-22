@@ -1715,7 +1715,7 @@ class _VoiceItPageState extends State<VoiceItPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: Image.file(
                   File(selectedImage!.path),
-                  height: 220,
+                  height: 300,
                   width: double.infinity,
                   fit: BoxFit.contain,
                 ),
