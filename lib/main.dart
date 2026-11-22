@@ -535,7 +535,9 @@ class _SignupPageState extends State<SignupPage> {
 // SECTION 2 STARTS WITH HOMEPAGE
 // ==========================================
 
+// ==========================================
 // HOME PAGE
+// ==========================================
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -1129,8 +1131,9 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-
+// ==========================================
 // POST CARD
+// ==========================================
 
 class PostCard extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> post;
@@ -1206,8 +1209,9 @@ class PostCard extends StatelessWidget {
       }
     }
   }
-
+  // ==========================================
   // DELETE POST
+  // ==========================================
 
   Future<void> deletePost(BuildContext context) async {
     final confirm = await showDialog<bool>(
@@ -1563,10 +1567,13 @@ class PostCard extends StatelessWidget {
   }
 }
 
+// ==========================================
 // POST CARD समाप्त
+// ==========================================
 
- 
+// ==========================================
 // VOICE IT PAGE
+// ==========================================
 
 class VoiceItPage extends StatefulWidget {
   const VoiceItPage({super.key});
@@ -1752,10 +1759,13 @@ class _VoiceItPageState extends State<VoiceItPage> {
   }
 }
 
+// ==========================================
 // भाग ३ समाप्त
+// ==========================================
 
-
+// ==========================================
 // OPINION PAGE
+// ==========================================
 
 class OpinionPage extends StatefulWidget {
   const OpinionPage({super.key});
@@ -1835,10 +1845,13 @@ class _OpinionPageState extends State<OpinionPage> {
   }
 }
 
+// ==========================================
 // खण्ड ४ समाप्त
+// ==========================================
 
-
+// ==========================================
 // IDENTITY PAGE
+// ==========================================
 
 class IdentityPage extends StatefulWidget {
   const IdentityPage({super.key});
@@ -1983,8 +1996,10 @@ class _IdentityPageState extends State<IdentityPage> {
     }
   }
 
+  // ==========================================
   // PROFILE STATISTICS
-
+ // ==========================================
+  
   Widget buildStat(String number, String label) {
     return Expanded(
       child: Column(
@@ -2187,9 +2202,11 @@ class _IdentityPageState extends State<IdentityPage> {
                               ),
                             ),
 
-                            const SizedBox(height: 25),
-
+                            const SizedBox(height: 25), 
+                                                                                                                                                                                                                               
+                            // ==========================================
                             // PROFILE STATISTICS
+                            // ==========================================
 
                             Card(
                               elevation: 1,
@@ -2225,7 +2242,9 @@ class _IdentityPageState extends State<IdentityPage> {
 
                             const SizedBox(height: 20),
 
+                            // ==========================================
                             // ABOUT ME
+                            // ==========================================
 
                             Card(
                               elevation: 1,
