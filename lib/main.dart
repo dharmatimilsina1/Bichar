@@ -923,6 +923,7 @@ class _HomePageState extends State<HomePage> {
 
 // POST CARD
 
+
 class PostCard extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> post;
   final Function(List<String>) onAgree;
@@ -937,14 +938,139 @@ class PostCard extends StatelessWidget {
     required this.onSpread,
   });
 
+  Future<void> editPost(BuildContext context, String oldText) async {
+    final controller = TextEditingController(text: oldText);
+
+    final editedText = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Voice'),
+          content: TextField(
+            controller: controller,
+            maxLines: 6,
+            maxLength: 2000,
+            decoration: const InputDecoration(
+              hintText: 'आफ्नो पोस्ट सम्पादन गर्नुहोस्',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (editedText == null || editedText.isEmpty) {
+      return;
+    }
+
+    try {
+      await post.reference.update({
+        'text': editedText,
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post updated successfully'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post update गर्न सकिएन'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> deletePost(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Post?'),
+          content: const Text(
+            'के तपाईं यो पोस्ट हटाउन चाहनुहुन्छ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                false,
+              ),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                true,
+              ),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await post.reference.delete();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post deleted successfully'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post delete गर्न सकिएन'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = post.data();
     final user = FirebaseAuth.instance.currentUser;
     final agreedBy = List<String>.from(data['agreedBy'] ?? []);
-    final hasAgreed = user != null && agreedBy.contains(user.uid);
+    final hasAgreed =
+        user != null && agreedBy.contains(user.uid);
+
     final text = data['text']?.toString() ?? '';
     final name = data['name']?.toString() ?? 'User';
+
+    final isOwner =
+        user != null && data['uid'] == user.uid;
 
     return Card(
       color: const Color(0xFFFFF0EF),
@@ -961,46 +1087,57 @@ class PostCard extends StatelessWidget {
             Row(
               children: [
                 Builder(
-  builder: (context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
+                  builder: (context) {
+                    final currentUser =
+                        FirebaseAuth.instance.currentUser;
 
-    if (currentUser != null &&
-        data['uid'] == currentUser.uid) {
-      return FutureBuilder<Directory>(
-        future: getApplicationDocumentsDirectory(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const CircleAvatar(
-              child: Icon(Icons.person),
-            );
-          }
+                    if (currentUser != null &&
+                        data['uid'] == currentUser.uid) {
+                      return FutureBuilder<Directory>(
+                        future: getApplicationDocumentsDirectory(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const CircleAvatar(
+                              child: Icon(Icons.person),
+                            );
+                          }
 
-          final photo = File(
-            '${snapshot.data!.path}/profile_${currentUser.uid}.jpg',
-          );
+                          final photo = File(
+                            '${snapshot.data!.path}/profile_${currentUser.uid}.jpg',
+                          );
 
-          if (!photo.existsSync()) {
-            return const CircleAvatar(
-              backgroundColor: Color(0xFFFFDAD6),
-              child: Icon(Icons.person, color: Colors.brown),
-            );
-          }
+                          if (!photo.existsSync()) {
+                            return const CircleAvatar(
+                              backgroundColor:
+                                  Color(0xFFFFDAD6),
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.brown,
+                              ),
+                            );
+                          }
 
-          return CircleAvatar(
-            backgroundImage: FileImage(photo),
-            backgroundColor: const Color(0xFFFFDAD6),
-          );
-        },
-      );
-    }
+                          return CircleAvatar(
+                            backgroundImage: FileImage(photo),
+                            backgroundColor:
+                                const Color(0xFFFFDAD6),
+                          );
+                        },
+                      );
+                    }
 
-    return const CircleAvatar(
-      backgroundColor: Color(0xFFFFDAD6),
-      child: Icon(Icons.person, color: Colors.brown),
-    );
-  },
-),
+                    return const CircleAvatar(
+                      backgroundColor: Color(0xFFFFDAD6),
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.brown,
+                      ),
+                    );
+                  },
+                ),
+
                 const SizedBox(width: 12),
+
                 Expanded(
                   child: Text(
                     name,
@@ -1010,6 +1147,52 @@ class PostCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                if (isOwner)
+                  PopupMenuButton<String>(
+                    icon: const Icon(
+                      Icons.more_vert,
+                      color: Colors.brown,
+                    ),
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        editPost(context, text);
+                      } else if (value == 'delete') {
+                        deletePost(context);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_outlined,
+                              color: Colors.brown,
+                            ),
+                            SizedBox(width: 10),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
 
@@ -1022,28 +1205,27 @@ class PostCard extends StatelessWidget {
                 height: 1.5,
               ),
             ),
-            
-if (data['photoPath'] != null &&
-    data['photoPath'].toString().isNotEmpty &&
-    File(data['photoPath'].toString()).existsSync()) ...[
-  const SizedBox(height: 12),
-  ClipRRect(
-    borderRadius: BorderRadius.circular(12),
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxHeight: 350,
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Image.file(
-          File(data['photoPath'].toString()),
-          fit: BoxFit.contain,
-        ),
-      ),
-    ),
-  ),
-],
-            
+
+            if (data['photoPath'] != null &&
+                data['photoPath'].toString().isNotEmpty &&
+                File(data['photoPath'].toString()).existsSync()) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 350,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Image.file(
+                      File(data['photoPath'].toString()),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            ],
 
             const SizedBox(height: 16),
 
@@ -1061,11 +1243,14 @@ if (data['photoPath'] != null &&
                     label: Text(
                       'Agree (${agreedBy.length})',
                       style: TextStyle(
-                        color: hasAgreed ? Colors.red : Colors.brown,
+                        color: hasAgreed
+                            ? Colors.red
+                            : Colors.brown,
                       ),
                     ),
                   ),
                 ),
+
                 Expanded(
                   child: TextButton.icon(
                     onPressed: onOpinion,
@@ -1079,6 +1264,7 @@ if (data['photoPath'] != null &&
                     ),
                   ),
                 ),
+
                 Expanded(
                   child: TextButton.icon(
                     onPressed: () => onSpread(text),
@@ -1095,7 +1281,8 @@ if (data['photoPath'] != null &&
               ],
             ),
 
-            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            StreamBuilder<
+                QuerySnapshot<Map<String, dynamic>>>(
               stream: post.reference
                   .collection('opinions')
                   .orderBy('createdAt', descending: true)
@@ -1111,12 +1298,14 @@ if (data['photoPath'] != null &&
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Divider(),
+
                     Text(
                       'Opinions (${opinions.length})',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     ...opinions.take(3).map((opinion) {
                       final opinionData = opinion.data();
 
@@ -1145,6 +1334,7 @@ if (data['photoPath'] != null &&
     );
   }
 }
+
 
 // भाग २ समाप्त
 
