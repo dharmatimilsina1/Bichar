@@ -1412,55 +1412,58 @@ class PostCard extends StatelessWidget {
 
             const Divider(height: 20),
 
-            // POST ACTIONS
+            // POST ACTIONS             
+            
+Row(
+  children: [
+    Expanded(
+      child: TextButton.icon(
+        onPressed: () => onAgree(agreedBy),
+        icon: Icon(
+          Icons.thumb_up_alt_outlined,
+          color: hasAgreed ? Colors.red : Colors.grey,
+        ),
+        label: Text(
+          'Agree',
+          style: TextStyle(
+            color: hasAgreed ? Colors.red : Colors.grey,
+          ),
+        ),
+      ),
+    ),
 
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: onAgree,
-                    icon: Icon(
-                      Icons.thumb_up_alt_outlined,
-                      color: hasAgreed ? Colors.red : Colors.grey,
-                    ),
-                    label: Text(
-                      'Agree',
-                      style: TextStyle(
-                        color: hasAgreed ? Colors.red : Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
+    Expanded(
+      child: TextButton.icon(
+        onPressed: onOpinion,
+        icon: const Icon(
+          Icons.chat_bubble_outline,
+          color: Colors.grey,
+        ),
+        label: const Text(
+          'Opinion',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ),
+    ),
 
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: onOpinion,
-                    icon: const Icon(
-                      Icons.chat_bubble_outline,
-                      color: Colors.grey,
-                    ),
-                    label: const Text(
-                      'Opinion',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-
-                Expanded(
-                  child: TextButton.icon(
-                    onPressed: onSpread,
-                    icon: const Icon(
-                      Icons.share_outlined,
-                      color: Colors.grey,
-                    ),
-                    label: const Text(
-                      'Spread',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    Expanded(
+      child: TextButton.icon(
+        onPressed: () => onSpread(text),
+        icon: const Icon(
+          Icons.share_outlined,
+          color: Colors.grey,
+        ),
+        label: const Text(
+          'Spread',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ),
+    ),
+  ],
+),
+                      
+              
+        
 
             const Divider(height: 15),
 
