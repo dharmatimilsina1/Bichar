@@ -1817,9 +1817,9 @@ class _OpinionPageState extends State<OpinionPage> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      body: SingleChildScrollView(
+  padding: const EdgeInsets.all(20),
+  child: Column(
           children: [
             TextField(
               controller: controller,
