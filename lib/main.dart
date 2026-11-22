@@ -1130,7 +1130,441 @@ class _HomePageState extends State<HomePage> {
 }
 
 
-// 
+// POST CARD
+
+class PostCard extends StatelessWidget {
+  final QueryDocumentSnapshot<Map<String, dynamic>> post;
+  final VoidCallback onAgree;
+  final VoidCallback onOpinion;
+  final VoidCallback onSpread;
+
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.onAgree,
+    required this.onOpinion,
+    required this.onSpread,
+  });
+
+  // EDIT POST
+
+  Future<void> editPost(BuildContext context) async {
+    final controller = TextEditingController(
+      text: post.data()['text']?.toString() ?? '',
+    );
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Edit Voice'),
+          content: TextField(
+            controller: controller,
+            maxLines: 5,
+            maxLength: 2000,
+            decoration: const InputDecoration(
+              hintText: 'Edit your voice...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (result == null || result.isEmpty) return;
+
+    try {
+      await post.reference.update({
+        'text': result,
+      });
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('पोस्ट Edit गर्न सकिएन'),
+          ),
+        );
+      }
+    }
+  }
+
+  // DELETE POST
+
+  Future<void> deletePost(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Voice?'),
+          content: const Text(
+            'के तपाईं यो पोस्ट हटाउन चाहनुहुन्छ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await post.reference.delete();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('पोस्ट हटाइयो'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('पोस्ट हटाउन सकिएन'),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = post.data();
+
+    final user = FirebaseAuth.instance.currentUser;
+    final currentUid = user?.uid ?? '';
+
+    final postUid = data['uid']?.toString() ?? '';
+    final name = data['name']?.toString() ?? 'User';
+    final text = data['text']?.toString() ?? '';
+    final photoPath = data['photoPath']?.toString() ?? '';
+
+    final agreedBy = data['agreedBy'] is List
+        ? List<String>.from(data['agreedBy'])
+        : <String>[];
+
+    final hasAgreed = agreedBy.contains(currentUid);
+    final isOwner = currentUid == postUid;
+
+    final hasPhoto = photoPath.isNotEmpty &&
+        File(photoPath).existsSync();
+
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 7,
+      ),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // USER INFORMATION
+
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 21,
+                  backgroundColor: Color(0xFFFFDAD6),
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.brown,
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+
+                if (isOwner)
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        editPost(context);
+                      } else if (value == 'delete') {
+                        deletePost(context);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined),
+                            SizedBox(width: 10),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            SizedBox(width: 10),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // POST TEXT
+
+            if (text.isNotEmpty)
+              Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+              ),
+
+            // POST PHOTO
+
+            if (hasPhoto) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(
+                  File(photoPath),
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox(
+                      height: 100,
+                      child: Center(
+                        child: Text('फोटो देखाउन सकिएन'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 12),
+
+            // AGREE COUNT
+
+            Text(
+              '${agreedBy.length} Agrees',
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+              ),
+            ),
+
+            const Divider(height: 20),
+
+            // POST ACTIONS
+
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onAgree,
+                    icon: Icon(
+                      Icons.thumb_up_alt_outlined,
+                      color: hasAgreed ? Colors.red : Colors.grey,
+                    ),
+                    label: Text(
+                      'Agree',
+                      style: TextStyle(
+                        color: hasAgreed ? Colors.red : Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onOpinion,
+                    icon: const Icon(
+                      Icons.chat_bubble_outline,
+                      color: Colors.grey,
+                    ),
+                    label: const Text(
+                      'Opinion',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: onSpread,
+                    icon: const Icon(
+                      Icons.share_outlined,
+                      color: Colors.grey,
+                    ),
+                    label: const Text(
+                      'Spread',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const Divider(height: 15),
+
+            // RECENT OPINIONS
+
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: post.reference
+                  .collection('opinions')
+                  .orderBy('createdAt', descending: true)
+                  .limit(3)
+                  .snapshots(),
+              builder: (context, opinionSnapshot) {
+                if (opinionSnapshot.hasError) {
+                  return const Text(
+                    'Opinion देखाउन समस्या भयो',
+                    style: TextStyle(color: Colors.grey),
+                  );
+                }
+
+                if (!opinionSnapshot.hasData ||
+                    opinionSnapshot.data!.docs.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                final opinions = opinionSnapshot.data!.docs;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Recent Opinions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    ...opinions.map((opinion) {
+                      final opinionData = opinion.data();
+
+                      final opinionName =
+                          opinionData['name']?.toString() ?? 'User';
+
+                      final opinionText =
+                          opinionData['text']?.toString() ?? '';
+
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: 10,
+                        ),
+                        child: Row(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            const CircleAvatar(
+                              radius: 15,
+                              backgroundColor: Color(0xFFFFDAD6),
+                              child: Icon(
+                                Icons.person,
+                                size: 17,
+                                color: Colors.brown,
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    opinionName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    opinionText,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// POST CARD समाप्त
+
             
 
   
