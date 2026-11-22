@@ -1755,5 +1755,87 @@ class _VoiceItPageState extends State<VoiceItPage> {
 // भाग ३ समाप्त
 
 
+// OPINION PAGE
+
+class OpinionPage extends StatefulWidget {
+  const OpinionPage({super.key});
+
+  @override
+  State<OpinionPage> createState() => _OpinionPageState();
+}
+
+class _OpinionPageState extends State<OpinionPage> {
+  final controller = TextEditingController();
+  bool isSubmitting = false;
+
+  void submit() {
+    if (isSubmitting) return;
+
+    final text = controller.text.trim();
+
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('पहिले आफ्नो Opinion लेख्नुहोस्'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isSubmitting = true;
+    });
+
+    Navigator.pop(context, text);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Your Opinion'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              controller: controller,
+              maxLines: 7,
+              maxLength: 1500,
+              decoration: const InputDecoration(
+                hintText: 'Write your opinion...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isSubmitting ? null : submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('SUBMIT OPINION'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// खण्ड ४ समाप्त
+
 
   
