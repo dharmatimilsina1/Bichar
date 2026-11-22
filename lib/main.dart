@@ -1839,7 +1839,16 @@ class _OpinionPageState extends State<OpinionPage> {
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('SUBMIT OPINION'),
+                child: isSubmitting
+    ? const SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(
+          color: Colors.white,
+          strokeWidth: 2,
+        ),
+      )
+    : const Text('SUBMIT OPINION'),
               ),
             ),
           ],
