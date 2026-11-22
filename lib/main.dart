@@ -1838,4 +1838,508 @@ class _OpinionPageState extends State<OpinionPage> {
 // खण्ड ४ समाप्त
 
 
+// IDENTITY PAGE
+
+class IdentityPage extends StatefulWidget {
+  const IdentityPage({super.key});
+
+  @override
+  State<IdentityPage> createState() => _IdentityPageState();
+}
+
+class _IdentityPageState extends State<IdentityPage> {
+  final ImagePicker picker = ImagePicker();
+  bool isPickingPhoto = false;
+
+  late Future<Directory> directoryFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    directoryFuture = getApplicationDocumentsDirectory();
+  }
+
+  // PICK PROFILE PHOTO
+
+  Future<void> pickProfilePhoto() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || isPickingPhoto) return;
+
+    setState(() {
+      isPickingPhoto = true;
+    });
+
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      final directory = await getApplicationDocumentsDirectory();
+
+      final photoPath =
+          '${directory.path}/profile_${user.uid}.jpg';
+
+      await File(image.path).copy(photoPath);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('प्रोफाइल फोटो सुरक्षित भयो'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('फोटो राख्न सकिएन'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isPickingPhoto = false;
+        });
+      }
+    }
+  }
+
+  // EDIT ABOUT ME
+
+  Future<void> editAboutMe(String oldAboutMe) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final controller = TextEditingController(
+      text: oldAboutMe,
+    );
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('About Me'),
+          content: TextField(
+            controller: controller,
+            maxLines: 5,
+            maxLength: 300,
+            decoration: const InputDecoration(
+              hintText: 'आफ्नो बारेमा लेख्नुहोस्...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  controller.text.trim(),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (!mounted || result == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'aboutMe': result,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('About Me सुरक्षित भयो'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('About Me सुरक्षित गर्न सकिएन'),
+          ),
+        );
+      }
+    }
+  }
+
+  // PROFILE STATISTICS
+
+  Widget buildStat(String number, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            number,
+            style: const TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Center(
+        child: Text('Login गर्नुहोस्'),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState ==
+            ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (userSnapshot.hasError) {
+          return const Center(
+            child: Text('Profile खोल्न समस्या भयो'),
+          );
+        }
+
+        final data = userSnapshot.data?.data() ?? {};
+
+        final name = data['name']?.toString() ??
+            user.displayName ??
+            'User';
+
+        final email = data['email']?.toString() ??
+            user.email ??
+            '';
+
+        final aboutMe =
+            data['aboutMe']?.toString() ?? '';
+
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('posts')
+              .where('uid', isEqualTo: user.uid)
+              .snapshots(),
+          builder: (context, postSnapshot) {
+            final posts = postSnapshot.data?.docs ?? [];
+
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('followers')
+                  .snapshots(),
+              builder: (context, followerSnapshot) {
+                final followers =
+                    followerSnapshot.data?.docs.length ?? 0;
+
+                return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('following')
+                      .snapshots(),
+                  builder: (context, followingSnapshot) {
+                    final following =
+                        followingSnapshot.data?.docs.length ?? 0;
+
+                    return FutureBuilder<Directory>(
+                      future: directoryFuture,
+                      builder: (context, directorySnapshot) {
+                        final savedPhotoPath =
+                            directorySnapshot.hasData
+                                ? '${directorySnapshot.data!.path}/profile_${user.uid}.jpg'
+                                : '';
+
+                        final hasPhoto =
+                            savedPhotoPath.isNotEmpty &&
+                            File(savedPhotoPath).existsSync();
+
+                        return ListView(
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            const SizedBox(height: 20),
+
+                            // PROFILE PHOTO
+
+                            Center(
+                              child: GestureDetector(
+                                onTap: isPickingPhoto
+                                    ? null
+                                    : pickProfilePhoto,
+                                child: Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 48,
+                                      backgroundColor:
+                                          const Color(0xFFFFDAD6),
+                                      backgroundImage: hasPhoto
+                                          ? FileImage(
+                                              File(savedPhotoPath),
+                                            )
+                                          : null,
+                                      child: hasPhoto
+                                          ? null
+                                          : const Icon(
+                                              Icons.person,
+                                              size: 55,
+                                              color: Colors.brown,
+                                            ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: CircleAvatar(
+                                        radius: 17,
+                                        backgroundColor: Colors.red,
+                                        child: isPickingPhoto
+                                            ? const Padding(
+                                                padding:
+                                                    EdgeInsets.all(8),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.camera_alt,
+                                                size: 19,
+                                                color: Colors.white,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            const Center(
+                              child: Text(
+                                'Change Profile Photo',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // NAME
+
+                            Center(
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Center(
+                              child: Text(
+                                email,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 25),
+
+                            // PROFILE STATISTICS
+
+                            Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                child: Row(
+                                  children: [
+                                    buildStat(
+                                      postSnapshot.hasError
+                                          ? '—'
+                                          : posts.length.toString(),
+                                      'Voices',
+                                    ),
+                                    buildStat(
+                                      followerSnapshot.hasError
+                                          ? '—'
+                                          : followers.toString(),
+                                      'Followers',
+                                    ),
+                                    buildStat(
+                                      followingSnapshot.hasError
+                                          ? '—'
+                                          : following.toString(),
+                                      'Following',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // ABOUT ME
+
+                            Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Expanded(
+                                          child: Text(
+                                            'About Me',
+                                            style: TextStyle(
+                                              fontSize: 19,
+                                              fontWeight:
+                                                  FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            editAboutMe(aboutMe);
+                                          },
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      aboutMe.isEmpty
+                                          ? 'आफ्नो बारेमा केही लेख्नुहोस्।'
+                                          : aboutMe,
+                                      style: TextStyle(
+                                        color: aboutMe.isEmpty
+                                            ? Colors.grey
+                                            : Colors.black87,
+                                        fontSize: 15,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 22),
+
+                            // MY VOICES
+
+                            const Text(
+                              'My Voices',
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            if (postSnapshot.hasError)
+                              const Text(
+                                'पोस्ट देखाउन समस्या भयो',
+                              )
+                            else if (!postSnapshot.hasData)
+                              const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            else if (posts.isEmpty)
+                              const Text(
+                                'तपाईंले अहिलेसम्म पोस्ट गर्नुभएको छैन।',
+                              )
+                            else
+                              ...posts.map((post) {
+                                final postData = post.data();
+
+                                return Card(
+                                  margin: const EdgeInsets.only(
+                                    bottom: 10,
+                                  ),
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.forum_outlined,
+                                      color: Colors.red,
+                                    ),
+                                    title: Text(
+                                      postData['text']?.toString() ??
+                                          '',
+                                      maxLines: 4,
+                                      overflow:
+                                          TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                );
+                              }),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// खण्ड ५ समाप्त
+
   
