@@ -1149,52 +1149,48 @@ class PostCard extends StatelessWidget {
                 ),
 
                 if (isOwner)
-                  PopupMenuButton<String>(
-                    icon: const Icon(
-                      Icons.more_vert,
-                      color: Colors.brown,
-                    ),
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        editPost(context, text);
-                      } else if (value == 'delete') {
-                        deletePost(context);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.edit_outlined,
-                              color: Colors.brown,
-                            ),
-                            SizedBox(width: 10),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              color: Colors.red,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-              ],
-            ),
+  PopupMenuButton<String>(
+    icon: const Icon(
+      Icons.more_vert,
+      color: Colors.brown,
+    ),
+    onSelected: (String value) async {
+      if (value == 'edit') {
+        await editPost(context, text);
+      }
+
+      if (value == 'delete') {
+        await deletePost(context);
+      }
+    },
+    itemBuilder: (BuildContext context) {
+      return [
+        const PopupMenuItem<String>(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(Icons.edit_outlined, color: Colors.brown),
+              SizedBox(width: 10),
+              Text('Edit'),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, color: Colors.red),
+              SizedBox(width: 10),
+              Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+      ];
+    },
+  ),
 
             const SizedBox(height: 18),
 
