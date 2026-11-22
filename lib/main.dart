@@ -1565,6 +1565,195 @@ class PostCard extends StatelessWidget {
 
 // POST CARD समाप्त
 
-            
+ 
+// VOICE IT PAGE
+
+class VoiceItPage extends StatefulWidget {
+  const VoiceItPage({super.key});
+
+  @override
+  State<VoiceItPage> createState() => _VoiceItPageState();
+}
+
+class _VoiceItPageState extends State<VoiceItPage> {
+  final controller = TextEditingController();
+  final ImagePicker picker = ImagePicker();
+
+  XFile? selectedImage;
+  bool loading = false;
+  bool isPickingPhoto = false;
+
+  Future<void> pickImage() async {
+    if (loading || isPickingPhoto) return;
+
+    setState(() {
+      isPickingPhoto = true;
+    });
+
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null && mounted) {
+        setState(() {
+          selectedImage = image;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('फोटो छान्न सकिएन'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isPickingPhoto = false;
+        });
+      }
+    }
+  }
+
+  void submit() {
+    if (loading) return;
+
+    final text = controller.text.trim();
+
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('पहिले आफ्नो विचार लेख्नुहोस्'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      loading = true;
+    });
+
+    Navigator.pop(context, {
+      'text': text,
+      'photoPath': selectedImage?.path,
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Voice It'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: controller,
+              maxLines: 8,
+              maxLength: 2000,
+              decoration: const InputDecoration(
+                hintText: 'Share your thoughts...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            OutlinedButton.icon(
+              onPressed: loading || isPickingPhoto
+                  ? null
+                  : pickImage,
+              icon: isPickingPhoto
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.photo_library_outlined,
+                      color: Colors.red,
+                    ),
+              label: Text(
+                isPickingPhoto
+                    ? 'Selecting Photo...'
+                    : 'Add Photo from Gallery',
+              ),
+            ),
+
+            if (selectedImage != null) ...[
+              const SizedBox(height: 16),
+
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(selectedImage!.path),
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                ),
+              ),
+
+              TextButton.icon(
+                onPressed: loading
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedImage = null;
+                        });
+                      },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Remove Photo'),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: loading || isPickingPhoto
+                  ? null
+                  : submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: loading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text('VOICE IT'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// भाग ३ समाप्त
+
+
 
   
