@@ -2349,12 +2349,31 @@ setState(() {});
                                       Icons.forum_outlined,
                                       color: Colors.red,
                                     ),
-                                    title: Text(
-                                      postData['text']?.toString() ??
-                                          '',
-                                      maxLines: 4,
-                                      overflow:
-                                          TextOverflow.ellipsis,
+                                    title: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    if ((postData['text']?.toString() ?? '').isNotEmpty)
+      Text(
+        postData['text'].toString(),
+        maxLines: 4,
+        overflow: TextOverflow.ellipsis,
+      ),
+
+    if ((postData['photoPath']?.toString() ?? '').isNotEmpty &&
+        File(postData['photoPath'].toString()).existsSync()) ...[
+      const SizedBox(height: 10),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.file(
+          File(postData['photoPath'].toString()),
+          width: double.infinity,
+          height: 180,
+          fit: BoxFit.contain,
+        ),
+      ),
+    ],
+  ],
+),
                                     ),
                                   ),
                                 );
