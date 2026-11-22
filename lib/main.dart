@@ -934,20 +934,25 @@ class _VoiceItPageState extends State<VoiceItPage> {
     }
   }
 
-  void submit() {
-    final text = controller.text.trim();
+  
+void submit() {
+  final text = controller.text.trim();
 
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('पहिले आफ्नो विचार लेख्नुहोस्'),
-        ),
-      );
-      return;
-    }
-
-    Navigator.pop(context, text);
+  if (text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('पहिले आफ्नो विचार लेख्नुहोस्'),
+      ),
+    );
+    return;
   }
+
+  Navigator.pop(context, {
+    'text': text,
+    'photoPath': selectedImage?.path,
+  });
+}
+  
 
   @override
   void dispose() {
