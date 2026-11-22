@@ -1551,6 +1551,7 @@ class _OpinionPageState extends State<OpinionPage> {
 // IDENTITY PAGE
 
 
+
 class IdentityPage extends StatefulWidget {
   const IdentityPage({super.key});
 
@@ -1579,7 +1580,6 @@ class _IdentityPageState extends State<IdentityPage> {
       });
 
       final directory = await getApplicationDocumentsDirectory();
-
       final photoPath =
           '${directory.path}/profile_${user.uid}.jpg';
 
@@ -1611,244 +1611,34 @@ class _IdentityPageState extends State<IdentityPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return const Center(child: Text('Login गर्नुहोस्'));
-    }
-
-    final photoPath =
-        '${Directory.systemTemp.path}/unused';
-
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        final data = snapshot.data?.data() ?? {};
-        final name = data['name']?.toString() ??
-            user.displayName ??
-            'User';
-        final email = data['email']?.toString() ?? user.email ?? '';
-
-        final directoryPath =
-            '${Directory.systemTemp.path}/unused';
-
-        final profileFile = File(
-          '${Directory.systemTemp.path}/unused',
-        );
-
-        return FutureBuilder<Directory>(
-          future: getApplicationDocumentsDirectory(),
-          builder: (context, directorySnapshot) {
-            final savedPhotoPath =
-                directorySnapshot.hasData
-                    ? '${directorySnapshot.data!.path}/profile_${user.uid}.jpg'
-                    : '';
-
-            final hasPhoto = savedPhotoPath.isNotEmpty &&
-                File(savedPhotoPath).existsSync();
-
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                const SizedBox(height: 25),
-
-                Center(
-                  child: GestureDetector(
-                    onTap: isPickingPhoto
-                        ? null
-                        : pickProfilePhoto,
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 48,
-                          backgroundColor: const Color(0xFFFFDAD6),
-                          backgroundImage: hasPhoto
-                              ? FileImage(File(savedPhotoPath))
-                              : null,
-                          child: hasPhoto
-                              ? null
-                              : const Icon(
-                                  Icons.person,
-                                  size: 55,
-                                  color: Colors.brown,
-                                ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                            radius: 17,
-                            backgroundColor: Colors.red,
-                            child: isPickingPhoto
-                                ? const Padding(
-                                    padding: EdgeInsets.all(8),
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.camera_alt,
-                                    size: 19,
-                                    color: Colors.white,
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                const Center(
-                  child: Text(
-                    'Change Profile Photo',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Center(
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Center(
-                  child: Text(
-                    email,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 25),
-                const Divider(),
-
-                const ListTile(
-                  leading: Icon(Icons.person_outline),
-                  title: Text('Identity'),
-                  subtitle: Text('Your Bichar account'),
-                ),
-
-                const Divider(),
-
-                const Text(
-                  'Your Voices',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('posts')
-                      .where('uid', isEqualTo: user.uid)
-                      .snapshots(),
-                  builder: (context, postSnapshot) {
-                    if (postSnapshot.hasError) {
-                      return const Text(
-                        'पोस्ट देखाउन समस्या भयो',
-                      );
-                    }
-
-                    if (!postSnapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-
-                    final posts = postSnapshot.data!.docs;
-
-                    if (posts.isEmpty) {
-                      return const Text(
-                        'तपाईंले अहिलेसम्म पोस्ट गर्नुभएको छैन।',
-                      );
-                    }
-
-                    return Column(
-                      children: posts.map((post) {
-                        return Card(
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.forum_outlined,
-                              color: Colors.red,
-                            ),
-                            title: Text(
-                              post.data()['text']?.toString() ?? '',
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-
-
-// SETTINGS PAGE
-
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  Future<void> editName(BuildContext context) async {
+  Future<void> editAboutMe(String oldAboutMe) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     final controller = TextEditingController(
-      text: user.displayName ?? '',
+      text: oldAboutMe,
     );
 
-    final newName = await showDialog<String>(
+    final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Edit Identity'),
+          title: const Text('About Me'),
           content: TextField(
             controller: controller,
+            maxLines: 5,
+            maxLength: 300,
             decoration: const InputDecoration(
-              labelText: 'Your Name',
+              hintText: 'आफ्नो बारेमा लेख्नुहोस्...',
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -1857,7 +1647,7 @@ class SettingsPage extends StatelessWidget {
                   controller.text.trim(),
                 );
               },
-              child: const Text('SAVE'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -1866,287 +1656,368 @@ class SettingsPage extends StatelessWidget {
 
     controller.dispose();
 
-    if (newName == null || newName.isEmpty) return;
+    if (result == null) return;
 
     try {
-      await user.updateDisplayName(newName);
-
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
-          .update({'name': newName});
+          .update({
+        'aboutMe': result,
+      });
 
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('नाम परिवर्तन भयो')),
+          const SnackBar(
+            content: Text('About Me सुरक्षित भयो'),
+          ),
         );
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('नाम परिवर्तन गर्न सकिएन')),
-        );
-      }
-    }
-  }
-
-  Future<void> resetPassword(BuildContext context) async {
-    final email = FirebaseAuth.instance.currentUser?.email;
-
-    if (email == null) return;
-
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: email,
-      );
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$email मा Password Reset Email पठाइयो'),
+          const SnackBar(
+            content: Text('About Me सुरक्षित गर्न सकिएन'),
           ),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'समस्या भयो')),
-        );
-      }
     }
   }
 
-  Future<void> logout(BuildContext context) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('के तपाईं Logout गर्न चाहनुहुन्छ?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('CANCEL'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('LOGOUT'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirm == true) {
-      await FirebaseAuth.instance.signOut();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: ListView(
+  Widget buildStat(String number, String label) {
+    return Expanded(
+      child: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.edit, color: Colors.red),
-            title: const Text('Edit Identity'),
-            subtitle: const Text('Change your name'),
-            onTap: () => editName(context),
+          Text(
+            number,
+            style: const TextStyle(
+              fontSize: 21,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.lock_outline, color: Colors.red),
-            title: const Text('Change Password'),
-            subtitle: const Text('Receive password reset email'),
-            onTap: () => resetPassword(context),
-          ),
-          const Divider(),
-          const ListTile(
-            leading: Icon(Icons.privacy_tip_outlined, color: Colors.red),
-            title: Text('Privacy Settings'),
-            subtitle: Text('Privacy information'),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout'),
-            onTap: () => logout(context),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 13,
+            ),
           ),
         ],
       ),
     );
   }
-}
-
-// EXPLORES PAGE
-
-class ExplorePage extends StatefulWidget {
-  const ExplorePage({super.key});
-
-  @override
-  State<ExplorePage> createState() => _ExplorePageState();
-}
-
-class _ExplorePageState extends State<ExplorePage> {
-  final searchController = TextEditingController();
-  String searchText = '';
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            controller: searchController,
-            onChanged: (value) {
-              setState(() {
-                searchText = value.trim().toLowerCase();
-              });
-            },
-            decoration: InputDecoration(
-              hintText: 'Search Voices...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .collection('posts')
-                .orderBy('createdAt', descending: true)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text('खोज्न समस्या भयो'),
-                );
-              }
+    final user = FirebaseAuth.instance.currentUser;
 
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
+    if (user == null) {
+      return const Center(
+        child: Text('Login गर्नुहोस्'),
+      );
+    }
 
-              final posts = snapshot.data!.docs.where((post) {
-                final text = post.data()['text']
-                    ?.toString()
-                    .toLowerCase() ?? '';
-                final name = post.data()['name']
-                    ?.toString()
-                    .toLowerCase() ?? '';
-
-                return text.contains(searchText) ||
-                    name.contains(searchText);
-              }).toList();
-
-              if (posts.isEmpty) {
-                return const Center(
-                  child: Text('कुनै Voice भेटिएन'),
-                );
-              }
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  final data = posts[index].data();
-
-                  return Card(
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
-                      title: Text(data['name'] ?? 'User'),
-                      subtitle: Text(data['text'] ?? ''),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// TOP DEBATES PAGE
-
-class TopDebatesPage extends StatelessWidget {
-  const TopDebatesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
-          .collection('posts')
+          .collection('users')
+          .doc(user.uid)
           .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(
-            child: Text('Top Debates लोड गर्न समस्या भयो'),
-          );
-        }
-
-        if (!snapshot.hasData) {
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState ==
+            ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        final posts = snapshot.data!.docs.toList();
+        final data = userSnapshot.data?.data() ?? {};
 
-        posts.sort((a, b) {
-          final aCount =
-              (a.data()['agreedBy'] as List?)?.length ?? 0;
-          final bCount =
-              (b.data()['agreedBy'] as List?)?.length ?? 0;
+        final name = data['name']?.toString() ??
+            user.displayName ??
+            'User';
 
-          return bCount.compareTo(aCount);
-        });
+        final email = data['email']?.toString() ??
+            user.email ??
+            '';
 
-        if (posts.isEmpty) {
-          return const Center(
-            child: Text('अहिलेसम्म कुनै Debate छैन'),
-          );
-        }
+        final aboutMe =
+            data['aboutMe']?.toString() ?? '';
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
-            final data = posts[index].data();
-            final count =
-                (data['agreedBy'] as List?)?.length ?? 0;
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('posts')
+              .where('uid', isEqualTo: user.uid)
+              .snapshots(),
+          builder: (context, postSnapshot) {
+            final posts = postSnapshot.data?.docs ?? [];
 
-            return Card(
-              color: const Color(0xFFFFF0EF),
-              child: ListTile(
-                leading: const Icon(
-                  Icons.trending_up,
-                  color: Colors.red,
-                ),
-                title: Text(data['text'] ?? ''),
-                subtitle: Text(
-                  '${data['name'] ?? 'User'} · Agree ($count)',
-                ),
-              ),
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .collection('followers')
+                  .snapshots(),
+              builder: (context, followerSnapshot) {
+                final followers =
+                    followerSnapshot.data?.docs.length ?? 0;
+
+                return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('following')
+                      .snapshots(),
+                  builder: (context, followingSnapshot) {
+                    final following =
+                        followingSnapshot.data?.docs.length ?? 0;
+
+                    return FutureBuilder<Directory>(
+                      future: getApplicationDocumentsDirectory(),
+                      builder: (context, directorySnapshot) {
+                        final savedPhotoPath =
+                            directorySnapshot.hasData
+                                ? '${directorySnapshot.data!.path}/profile_${user.uid}.jpg'
+                                : '';
+
+                        final hasPhoto =
+                            savedPhotoPath.isNotEmpty &&
+                            File(savedPhotoPath).existsSync();
+
+                        return ListView(
+                          padding: const EdgeInsets.all(20),
+                          children: [
+                            const SizedBox(height: 20),
+
+                            // PROFILE PHOTO
+
+                            Center(
+                              child: GestureDetector(
+                                onTap: isPickingPhoto
+                                    ? null
+                                    : pickProfilePhoto,
+                                child: Stack(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 48,
+                                      backgroundColor:
+                                          const Color(0xFFFFDAD6),
+                                      backgroundImage: hasPhoto
+                                          ? FileImage(
+                                              File(savedPhotoPath),
+                                            )
+                                          : null,
+                                      child: hasPhoto
+                                          ? null
+                                          : const Icon(
+                                              Icons.person,
+                                              size: 55,
+                                              color: Colors.brown,
+                                            ),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: CircleAvatar(
+                                        radius: 17,
+                                        backgroundColor: Colors.red,
+                                        child: isPickingPhoto
+                                            ? const Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.camera_alt,
+                                                size: 19,
+                                                color: Colors.white,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            const Center(
+                              child: Text(
+                                'Change Profile Photo',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // NAME
+
+                            Center(
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Center(
+                              child: Text(
+                                email,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 25),
+
+                            // PROFILE STATISTICS
+
+                            Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                child: Row(
+                                  children: [
+                                    buildStat(
+                                      posts.length.toString(),
+                                      'Voices',
+                                    ),
+                                    buildStat(
+                                      followers.toString(),
+                                      'Followers',
+                                    ),
+                                    buildStat(
+                                      following.toString(),
+                                      'Following',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // ABOUT ME
+
+                            Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Expanded(
+                                          child: Text(
+                                            'About Me',
+                                            style: TextStyle(
+                                              fontSize: 19,
+                                              fontWeight:
+                                                  FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            editAboutMe(aboutMe);
+                                          },
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      aboutMe.isEmpty
+                                          ? 'आफ्नो बारेमा केही लेख्नुहोस्।'
+                                          : aboutMe,
+                                      style: TextStyle(
+                                        color: aboutMe.isEmpty
+                                            ? Colors.grey
+                                            : Colors.black87,
+                                        fontSize: 15,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 22),
+
+                            // MY VOICES
+
+                            const Text(
+                              'My Voices',
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            if (postSnapshot.hasError)
+                              const Text(
+                                'पोस्ट देखाउन समस्या भयो',
+                              )
+                            else if (!postSnapshot.hasData)
+                              const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            else if (posts.isEmpty)
+                              const Text(
+                                'तपाईंले अहिलेसम्म पोस्ट गर्नुभएको छैन।',
+                              )
+                            else
+                              ...posts.map((post) {
+                                final postData = post.data();
+
+                                return Card(
+                                  margin: const EdgeInsets.only(
+                                    bottom: 10,
+                                  ),
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.forum_outlined,
+                                      color: Colors.red,
+                                    ),
+                                    title: Text(
+                                      postData['text']
+                                              ?.toString() ??
+                                          '',
+                                      maxLines: 4,
+                                      overflow:
+                                          TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                );
+                              }),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             );
           },
         );
@@ -2155,76 +2026,6 @@ class TopDebatesPage extends StatelessWidget {
   }
 }
 
-// ACTIVITY PAGE
-
-class ActivityPage extends StatelessWidget {
-  const ActivityPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return const Center(child: Text('Login गर्नुहोस्'));
-    }
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('posts')
-          .where('uid', isEqualTo: user.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(
-            child: Text('Activity लोड गर्न समस्या भयो'),
-          );
-        }
-
-        if (!snapshot.hasData) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        final posts = snapshot.data!.docs;
-
-        if (posts.isEmpty) {
-          return const Center(
-            child: Text('अहिलेसम्म कुनै Activity छैन'),
-          );
-        }
-
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'Your Recent Voices',
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ...posts.map((post) {
-              final data = post.data();
-
-              return Card(
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.history,
-                    color: Colors.red,
-                  ),
-                  title: Text(data['text'] ?? ''),
-                  subtitle: const Text('Your Voice'),
-                ),
-              );
-            }),
-          ],
-        );
-      },
-    );
-  }
-}
 
 // भाग ३ समाप्त
 
