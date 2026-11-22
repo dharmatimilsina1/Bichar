@@ -1029,11 +1029,17 @@ if (data['photoPath'] != null &&
   const SizedBox(height: 12),
   ClipRRect(
     borderRadius: BorderRadius.circular(12),
-    child: Image.file(
-      File(data['photoPath'].toString()),
-      width: double.infinity,
-      maxHeight: 350,
-      fit: BoxFit.cover,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 350,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Image.file(
+          File(data['photoPath'].toString()),
+          fit: BoxFit.contain,
+        ),
+      ),
     ),
   ),
 ],
