@@ -342,6 +342,7 @@ class _SignupPageState extends State<SignupPage> {
 
 // HOME PAGE
 
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -360,78 +361,140 @@ class _HomePageState extends State<HomePage> {
     'Identity',
   ];
 
+  final TextEditingController composerController =
+      TextEditingController();
+
+  final FocusNode composerFocusNode = FocusNode();
+
+  final ImagePicker picker = ImagePicker();
+
+  bool composerVisible = false;
+  bool isSubmitting = false;
+  bool isOpinion = false;
+
+  String? activeOpinionPostId;
+  XFile? selectedImage;
+
   void showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  
-Future<void> openVoiceIt() async {
-  final result = await Navigator.push<Map<String, dynamic>>(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const VoiceItPage(),
-    ),
-  );
-
-  if (result == null) return;
-
-  final text = result['text']?.toString().trim() ?? '';
-  final photoPath = result['photoPath']?.toString();
-
-  if (text.isEmpty) return;
-
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
-
-  try {
-    await FirebaseFirestore.instance.collection('posts').add({
-      'uid': user.uid,
-      'name': user.displayName ?? 'User',
-      'text': text,
-      'photoPath': photoPath,
-      'createdAt': FieldValue.serverTimestamp(),
-      'agreedBy': [],
+  void openComposer() {
+    setState(() {
+      composerVisible = true;
+      isOpinion = false;
+      activeOpinionPostId = null;
+      selectedImage = null;
     });
 
-    if (mounted) showMessage('तपाईंको विचार प्रकाशित भयो');
-  } catch (e) {
-    if (mounted) {
-      showMessage('पोस्ट सुरक्षित गर्न सकिएन: $e');
+    FocusScope.of(context).requestFocus(composerFocusNode);
+  }
+
+  void openOpinionComposer(String postId) {
+    setState(() {
+      composerVisible = true;
+      isOpinion = true;
+      activeOpinionPostId = postId;
+      selectedImage = null;
+    });
+
+    FocusScope.of(context).requestFocus(composerFocusNode);
+  }
+
+  Future<void> pickImage() async {
+    try {
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null && mounted) {
+        setState(() {
+          selectedImage = image;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        showMessage('फोटो छान्न सकिएन');
+      }
     }
   }
-}
-  
 
-  Future<void> openOpinion(String postId) async {
-    final result = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const OpinionPage(),
-      ),
-    );
+  Future<void> submitComposer() async {
+    final text = composerController.text.trim();
 
-    if (result == null || result.trim().isEmpty) return;
+    if (text.isEmpty) {
+      showMessage('पहिले आफ्नो विचार लेख्नुहोस्');
+      return;
+    }
 
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+
+    if (user == null) {
+      showMessage('पहिले Login गर्नुहोस्');
+      return;
+    }
+
+    setState(() {
+      isSubmitting = true;
+    });
 
     try {
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(postId)
-          .collection('opinions')
-          .add({
-        'uid': user.uid,
-        'name': user.displayName ?? 'User',
-        'text': result.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      if (isOpinion && activeOpinionPostId != null) {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(activeOpinionPostId)
+            .collection('opinions')
+            .add({
+          'uid': user.uid,
+          'name': user.displayName ?? 'User',
+          'text': text,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-      if (mounted) showMessage('Opinion प्रकाशित भयो');
+        if (mounted) {
+          showMessage('Opinion प्रकाशित भयो');
+        }
+      } else {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .add({
+          'uid': user.uid,
+          'name': user.displayName ?? 'User',
+          'text': text,
+          'photoPath': selectedImage?.path,
+          'createdAt': FieldValue.serverTimestamp(),
+          'agreedBy': [],
+        });
+
+        if (mounted) {
+          showMessage('तपाईंको विचार प्रकाशित भयो');
+        }
+      }
+
+      if (mounted) {
+        composerController.clear();
+
+        setState(() {
+          composerVisible = false;
+          isSubmitting = false;
+          isOpinion = false;
+          activeOpinionPostId = null;
+          selectedImage = null;
+        });
+
+        FocusScope.of(context).unfocus();
+      }
     } catch (e) {
-      if (mounted) showMessage('Opinion सुरक्षित गर्न सकिएन');
+      if (mounted) {
+        setState(() {
+          isSubmitting = false;
+        });
+
+        showMessage('प्रकाशित गर्न सकिएन: $e');
+      }
     }
   }
 
@@ -457,7 +520,7 @@ Future<void> openVoiceIt() async {
     }
   }
 
-    Future<void> spreadPost(String text) async {
+  Future<void> spreadPost(String text) async {
     try {
       await SharePlus.instance.share(
         ShareParams(
@@ -470,7 +533,121 @@ Future<void> openVoiceIt() async {
         showMessage('पोस्ट Share गर्न सकिएन');
       }
     }
-    }
+  }
+
+  Widget buildComposer() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isOpinion ? 'Write your Opinion' : 'Voice your thoughts',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () {
+                        setState(() {
+                          composerVisible = false;
+                          isOpinion = false;
+                          activeOpinionPostId = null;
+                          selectedImage = null;
+                        });
+
+                        composerController.clear();
+                        FocusScope.of(context).unfocus();
+                      },
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+
+          TextField(
+            controller: composerController,
+            focusNode: composerFocusNode,
+            autofocus: true,
+            maxLines: 5,
+            minLines: 2,
+            maxLength: 2000,
+            decoration: const InputDecoration(
+              hintText: 'What is on your mind?',
+              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+
+          if (!isOpinion) ...[
+            OutlinedButton.icon(
+              onPressed: isSubmitting ? null : pickImage,
+              icon: const Icon(
+                Icons.photo_library_outlined,
+                color: Colors.red,
+              ),
+              label: const Text('Add Photo'),
+            ),
+
+            if (selectedImage != null) ...[
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  File(selectedImage!.path),
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: isSubmitting
+                    ? null
+                    : () {
+                        setState(() {
+                          selectedImage = null;
+                        });
+                      },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Remove Photo'),
+              ),
+            ],
+          ],
+
+          const SizedBox(height: 10),
+
+          ElevatedButton(
+            onPressed: isSubmitting ? null : submitComposer,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: isSubmitting
+                ? const CircularProgressIndicator(
+                    color: Colors.white,
+                  )
+                : Text(
+                    isOpinion ? 'PUBLISH OPINION' : 'VOICE IT',
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget buildGhar() {
     final user = FirebaseAuth.instance.currentUser;
@@ -540,7 +717,7 @@ Future<void> openVoiceIt() async {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: InkWell(
-            onTap: openVoiceIt,
+            onTap: openComposer,
             borderRadius: BorderRadius.circular(16),
             child: Container(
               width: double.infinity,
@@ -548,7 +725,9 @@ Future<void> openVoiceIt() async {
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                ),
               ),
               child: const Row(
                 children: [
@@ -569,8 +748,10 @@ Future<void> openVoiceIt() async {
           ),
         ),
 
+        if (composerVisible) buildComposer(),
+
         const Padding(
-          padding: EdgeInsets.fromLTRB(16, 30, 16, 12),
+          padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -590,7 +771,8 @@ Future<void> openVoiceIt() async {
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+              if (snapshot.connectionState ==
+                  ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -629,7 +811,7 @@ Future<void> openVoiceIt() async {
                       toggleAgree(post.reference, agreedBy);
                     },
                     onOpinion: () {
-                      openOpinion(post.id);
+                      openOpinionComposer(post.id);
                     },
                     onSpread: (text) {
                       spreadPost(text);
@@ -662,8 +844,17 @@ Future<void> openVoiceIt() async {
   }
 
   @override
+  void dispose() {
+    composerController.dispose();
+    composerFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+
       appBar: selectedIndex == 0
           ? null
           : AppBar(
@@ -694,8 +885,11 @@ Future<void> openVoiceIt() async {
         selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
+          FocusScope.of(context).unfocus();
+
           setState(() {
             selectedIndex = index;
+            composerVisible = false;
           });
         },
         items: const [
@@ -724,6 +918,7 @@ Future<void> openVoiceIt() async {
     );
   }
 }
+
 
 // POST CARD
 
