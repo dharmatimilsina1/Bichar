@@ -790,6 +790,22 @@ class PostCard extends StatelessWidget {
                 height: 1.5,
               ),
             ),
+            
+if (data['photoPath'] != null &&
+    data['photoPath'].toString().isNotEmpty &&
+    File(data['photoPath'].toString()).existsSync()) ...[
+  const SizedBox(height: 12),
+  ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.file(
+      File(data['photoPath'].toString()),
+      width: double.infinity,
+      height: 250,
+      fit: BoxFit.cover,
+    ),
+  ),
+],
+            
 
             const SizedBox(height: 16),
 
