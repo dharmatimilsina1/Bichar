@@ -484,8 +484,8 @@ Future<void> openVoiceIt() async {
               ClipOval(
                 child: Image.asset(
                   'assets/images/logo (1).jpg',
-                  width: 52,
-                  height: 52,
+                  width: 45,
+                  height: 45,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return const CircleAvatar(
