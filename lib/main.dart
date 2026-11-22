@@ -1910,7 +1910,9 @@ class _IdentityPageState extends State<IdentityPage> {
 
       await File(image.path).copy(photoPath);
 
-      if (!mounted) return;
+if (!mounted) return;
+
+setState(() {});
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
