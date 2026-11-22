@@ -1137,9 +1137,9 @@ class _HomePageState extends State<HomePage> {
 
 class PostCard extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> post;
-  final VoidCallback onAgree;
+  final ValueChanged<List<String>> onAgree;
   final VoidCallback onOpinion;
-  final VoidCallback onSpread;
+  final ValueChanged<String> onSpread;
 
   const PostCard({
     super.key,
