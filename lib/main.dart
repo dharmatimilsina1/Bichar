@@ -1383,18 +1383,19 @@ class PostCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.file(
-                  File(photoPath),
-                  width: double.infinity,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox(
-                      height: 100,
-                      child: Center(
-                        child: Text('फोटो देखाउन सकिएन'),
-                      ),
-                    );
-                  },
-                ),
+  File(photoPath),
+  width: double.infinity,
+  height: 300,
+  fit: BoxFit.contain,
+  errorBuilder: (context, error, stackTrace) {
+    return const SizedBox(
+      height: 100,
+      child: Center(
+        child: Text('फोटो देखाउन सकिएन'),
+      ),
+    );
+  },
+),
               ),
             ],
 
