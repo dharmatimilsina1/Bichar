@@ -960,10 +960,46 @@ class PostCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  backgroundColor: Color(0xFFFFDAD6),
-                  child: Icon(Icons.person, color: Colors.brown),
-                ),
+                Builder(
+  builder: (context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null &&
+        data['uid'] == currentUser.uid) {
+      return FutureBuilder<Directory>(
+        future: getApplicationDocumentsDirectory(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircleAvatar(
+              child: Icon(Icons.person),
+            );
+          }
+
+          final photo = File(
+            '${snapshot.data!.path}/profile_${currentUser.uid}.jpg',
+          );
+
+          if (!photo.existsSync()) {
+            return const CircleAvatar(
+              backgroundColor: Color(0xFFFFDAD6),
+              child: Icon(Icons.person, color: Colors.brown),
+            );
+          }
+
+          return CircleAvatar(
+            backgroundImage: FileImage(photo),
+            backgroundColor: const Color(0xFFFFDAD6),
+          );
+        },
+      );
+    }
+
+    return const CircleAvatar(
+      backgroundColor: Color(0xFFFFDAD6),
+      child: Icon(Icons.person, color: Colors.brown),
+    );
+  },
+),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
