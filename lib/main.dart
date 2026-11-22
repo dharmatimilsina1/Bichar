@@ -1032,7 +1032,7 @@ if (data['photoPath'] != null &&
     child: Image.file(
       File(data['photoPath'].toString()),
       width: double.infinity,
-      height: 250,
+      maxHeight: 350,
       fit: BoxFit.cover,
     ),
   ),
