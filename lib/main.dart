@@ -378,7 +378,7 @@ class _SignupPageState extends State<SignupPage> {
       await user.updateDisplayName(name);
 
       await FirebaseFirestore.instance
-          .collection('users')
+          .collection('publicProfiles')
           .doc(user.uid)
           .set({
         'uid': user.uid,
