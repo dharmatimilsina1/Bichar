@@ -2446,8 +2446,17 @@ class SettingsPage extends StatelessWidget {
 
       await user.updateDisplayName(result);
 
-      await FirebaseFirestore.instance
+            final firestore = FirebaseFirestore.instance;
+
+      await firestore
           .collection('users')
+          .doc(user.uid)
+          .update({
+        'name': result,
+      });
+
+      await firestore
+          .collection('publicProfiles')
           .doc(user.uid)
           .update({
         'name': result,
