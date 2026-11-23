@@ -2394,3 +2394,229 @@ setState(() {});
 
 // खण्ड ५ समाप्त
 
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  // EDIT IDENTITY
+
+  Future<void> editIdentity(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final controller = TextEditingController(
+      text: user.displayName ?? '',
+    );
+
+    try {
+      final result = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Edit Identity'),
+            content: TextField(
+              controller: controller,
+              maxLength: 40,
+              decoration: const InputDecoration(
+                labelText: 'Your Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(dialogContext),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isEmpty) return;
+
+                  Navigator.pop(dialogContext, name);
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!context.mounted || result == null) return;
+
+      await user.updateDisplayName(result);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .update({
+        'name': result,
+      });
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('नाम परिवर्तन भयो'),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('नाम परिवर्तन गर्न सकिएन'),
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  // CHANGE PASSWORD
+
+  Future<void> changePassword(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email;
+
+    if (email == null || email.isEmpty) return;
+
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email);
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password Reset Email पठाइयो'),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email पठाउन सकिएन'),
+        ),
+      );
+    }
+  }
+
+  // LOGOUT
+
+  Future<void> logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text(
+            'के तपाईं Logout गर्न चाहनुहुन्छ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, true),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logout गर्न सकिएन'),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Text(
+            'ACCOUNT',
+            style: TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Edit Identity'),
+            subtitle: const Text('Change your name'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => editIdentity(context),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: const Text('Change Password'),
+            subtitle: const Text('Reset password through email'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => changePassword(context),
+          ),
+
+          const Divider(height: 30),
+
+          const Text(
+            'PRIVACY',
+            style: TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          const ListTile(
+            leading: Icon(Icons.privacy_tip_outlined),
+            title: Text('Privacy Settings'),
+            subtitle: Text(
+              'Privacy information and policies',
+            ),
+          ),
+
+          const Divider(height: 30),
+
+          ListTile(
+            leading: const Icon(
+              Icons.logout,
+              color: Colors.red,
+            ),
+            title: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () => logout(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// खण्ड ६ समाप्त
