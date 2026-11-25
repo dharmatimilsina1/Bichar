@@ -1267,8 +1267,6 @@ class PostCard extends StatelessWidget {
     }
   }
 
-    }
-
 // TIME AGO
 
 String timeAgo(DateTime dateTime) {
