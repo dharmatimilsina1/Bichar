@@ -2629,3 +2629,159 @@ class SettingsPage extends StatelessWidget {
 }
 
 // खण्ड ६ समाप्त
+
+// EXPLORE PAGE
+
+class ExplorePage extends StatelessWidget {
+  const ExplorePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Explore'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'People'),
+              Tab(text: 'Voices'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            ExplorePeopleTab(),
+            ExploreVoicesTab(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// EXPLORE PEOPLE
+
+class ExplorePeopleTab extends StatelessWidget {
+  const ExplorePeopleTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('publicProfiles')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('People देखाउन समस्या भयो'),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final profiles = snapshot.data!.docs;
+
+        if (profiles.isEmpty) {
+          return const Center(
+            child: Text('कुनै People भेटिएन'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: profiles.length,
+          itemBuilder: (context, index) {
+            final profile = profiles[index].data();
+
+            final name = profile['name']?.toString() ?? 'User';
+            final aboutMe = profile['aboutMe']?.toString() ?? '';
+
+            return ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.person),
+              ),
+              title: Text(name),
+              subtitle: aboutMe.isNotEmpty
+                  ? Text(
+                      aboutMe,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : const Text('No bio'),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// EXPLORE VOICES
+
+class ExploreVoicesTab extends StatelessWidget {
+  const ExploreVoicesTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('Voices देखाउन समस्या भयो'),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final posts = snapshot.data!.docs;
+
+        if (posts.isEmpty) {
+          return const Center(
+            child: Text('कुनै Voices भेटिएन'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            final post = posts[index].data();
+
+            final name = post['name']?.toString() ?? 'User';
+            final text = post['text']?.toString() ?? '';
+
+            return Card(
+              margin: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.person),
+                ),
+                title: Text(name),
+                subtitle: Text(text),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// खण्ड ७ समाप्त
+
