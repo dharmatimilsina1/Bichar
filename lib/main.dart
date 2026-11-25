@@ -1480,23 +1480,37 @@ Row(
 ),
 
 Expanded(
-  child: TextButton(
-    onPressed: onOpinion,
-    child: const Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.chat_bubble_outline, color: Colors.grey),
-        Text(
-          'Opinion',
-          softWrap: false,
-          style: TextStyle(color: Colors.grey),
+  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: post.reference
+        .collection('opinions')
+        .snapshots(),
+    builder: (context, snapshot) {
+      final count = snapshot.hasData
+          ? snapshot.data!.docs.length
+          : 0;
+
+      return TextButton(
+        onPressed: onOpinion,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.chat_bubble_outline,
+              color: Colors.grey,
+            ),
+            const Text(
+              'Opinion',
+              softWrap: false,
+              style: TextStyle(color: Colors.grey),
+            ),
+            Text(
+              '$count',
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
         ),
-        Text(
-          '0',
-          style: TextStyle(color: Colors.grey),
-        ),
-      ],
-    ),
+      );
+    },
   ),
 ),
 
