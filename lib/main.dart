@@ -2785,3 +2785,104 @@ class ExploreVoicesTab extends StatelessWidget {
 
 // खण्ड ७ समाप्त
 
+// TOP DEBATES PAGE
+
+class TopDebatesPage extends StatelessWidget {
+  const TopDebatesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Top Debates'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance
+            .collection('posts')
+            .orderBy('createdAt', descending: true)
+            .limit(100)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Top Debates देखाउन समस्या भयो'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final posts = snapshot.data!.docs.toList();
+
+          posts.sort((a, b) {
+            final aAgrees = a.data()['agreedBy'] is List
+                ? (a.data()['agreedBy'] as List).length
+                : 0;
+
+            final bAgrees = b.data()['agreedBy'] is List
+                ? (b.data()['agreedBy'] as List).length
+                : 0;
+
+            return bAgrees.compareTo(aAgrees);
+          });
+
+          if (posts.isEmpty) {
+            return const Center(
+              child: Text('कुनै Voices भेटिएन'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index].data();
+
+              final name = post['name']?.toString() ?? 'User';
+              final text = post['text']?.toString() ?? '';
+
+              final agreedBy = post['agreedBy'] is List
+                  ? (post['agreedBy'] as List).length
+                  : 0;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    child: Text('${index + 1}'),
+                  ),
+                  title: Text(name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(text),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.thumb_up_alt_outlined,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 5),
+                          Text('$agreedBy Agree'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// खण्ड ८ समाप्त
+
