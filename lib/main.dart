@@ -719,19 +719,26 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> spreadPost(String text) async {
-    try {
-      await SharePlus.instance.share(
-        ShareParams(
-          text: text,
-          title: 'Bichar - Spread this Voice',
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        showMessage('पोस्ट Share गर्न सकिएन');
-      }
+  Future<void> spreadPost(
+  DocumentReference<Map<String, dynamic>> postRef,
+  String text,
+) async {
+  try {
+    await SharePlus.instance.share(
+      ShareParams(
+        text: text,
+        title: 'Bichar - Spread this Voice',
+      ),
+    );
+
+    await postRef.update({
+      'spreadCount': FieldValue.increment(1),
+    });
+  } catch (e) {
+    if (mounted) {
+      showMessage('पोस्ट Share गर्न सकिएन');
     }
+  }
   }
 
   Widget buildComposer() {
