@@ -2886,3 +2886,29 @@ class TopDebatesPage extends StatelessWidget {
 
 // खण्ड ८ समाप्त
 
+// ACTIVITY PAGE
+
+class ActivityPage extends StatelessWidget {
+  const ActivityPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Activity'),
+      ),
+      body: const Center(
+        child: Text(
+          'Your activity will appear here',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 16,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// खण्ड ८ समाप्त
+
