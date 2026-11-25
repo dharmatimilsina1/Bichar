@@ -20,7 +20,7 @@ void main() async {
 
   await Supabase.initialize(
     url: 'https://uwgyrsbvtmbnmiuitsjo.supabase.co',
-    anonKey: 'YOUR_SUPABASE_ANON_KEY',
+    anonKey: 'sb_publishable_यहाँ_तपाईंको_key',
   );
 
   runApp(const BicharApp());
