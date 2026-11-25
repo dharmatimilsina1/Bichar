@@ -1534,9 +1534,9 @@ Expanded(
           style: TextStyle(color: Colors.grey),
         ),
         Text(
-          '0',
-          style: TextStyle(color: Colors.grey),
-        ),
+  '${post.data()['spreadCount'] ?? 0}',
+  style: TextStyle(color: Colors.grey),
+),
       ],
     ),
   ),
