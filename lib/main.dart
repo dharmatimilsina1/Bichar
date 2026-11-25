@@ -1534,11 +1534,11 @@ Expanded(
     ),
   ),
 ),
-                      
-              
-        
 
-            const Divider(height: 15),
+  ],
+),
+                      
+      const Divider(height: 15),
 
             // RECENT OPINIONS
 
