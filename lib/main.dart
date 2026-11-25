@@ -1464,13 +1464,7 @@ String timeAgo(DateTime dateTime) {
 
             // AGREE COUNT
 
-            Text(
-              '${agreedBy.length} Agrees',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-              ),
-            ),
+      
 
             const Divider(height: 20),
 
