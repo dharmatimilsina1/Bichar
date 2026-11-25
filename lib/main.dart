@@ -1524,7 +1524,7 @@ Expanded(
 Expanded(
   child: TextButton(
     onPressed: () => onSpread(text),
-    child: const Column(
+    child:  Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.share_outlined, color: Colors.grey),
