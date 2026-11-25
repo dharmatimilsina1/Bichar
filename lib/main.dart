@@ -1028,8 +1028,8 @@ class _HomePageState extends State<HomePage> {
                       openOpinionComposer(post.id);
                     },
                     onSpread: (text) {
-                      spreadPost(text);
-                    },
+  spreadPost(post.reference, text);
+},
                   );
                 },
               );
