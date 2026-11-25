@@ -19,7 +19,7 @@ void main() async {
   await Firebase.initializeApp();
 
   await Supabase.initialize(
-    url: 'YOUR_SUPABASE_URL',
+    url: 'https://uwgyrsbvtmbnmiuitsjo.supabase.co',
     anonKey: 'YOUR_SUPABASE_ANON_KEY',
   );
 
