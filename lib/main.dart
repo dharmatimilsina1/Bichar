@@ -1332,14 +1332,31 @@ String timeAgo(DateTime dateTime) {
 
             Row(
               children: [
-                const CircleAvatar(
-                  radius: 21,
-                  backgroundColor: Color(0xFFFFDAD6),
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.brown,
-                  ),
-                ),
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: FirebaseFirestore.instance
+      .collection('publicProfiles')
+      .doc(postUid)
+      .snapshots(),
+  builder: (context, snapshot) {
+    final photoUrl = snapshot.data?.data()?['photoUrl']
+        ?.toString() ?? '';
+
+    return CircleAvatar(
+      radius: 21,
+      backgroundColor: const Color(0xFFFFDAD6),
+      backgroundImage: photoUrl.isNotEmpty
+          ? NetworkImage(photoUrl)
+          : null,
+      child: photoUrl.isEmpty
+          ? const Icon(
+              Icons.person,
+              color: Colors.brown,
+            )
+          : null,
+    );
+  },
+),
+    
 
                 const SizedBox(width: 10),
 
