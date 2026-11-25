@@ -1454,50 +1454,71 @@ String timeAgo(DateTime dateTime) {
             
 Row(
   children: [
-    Expanded(
-      child: TextButton.icon(
-        onPressed: () => onAgree(agreedBy),
-        icon: Icon(
+  Expanded(
+  child: TextButton(
+    onPressed: () => onAgree(agreedBy),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
           Icons.thumb_up_alt_outlined,
           color: hasAgreed ? Colors.red : Colors.grey,
         ),
-        label: Text(
+        Text(
           'Agree',
           style: TextStyle(
             color: hasAgreed ? Colors.red : Colors.grey,
           ),
         ),
-      ),
-    ),
-
-    Expanded(
-      child: TextButton.icon(
-        onPressed: onOpinion,
-        icon: const Icon(
-          Icons.chat_bubble_outline,
-          color: Colors.grey,
+        Text(
+          '${agreedBy.length}',
+          style: const TextStyle(color: Colors.grey),
         ),
-        label: const Text(
+      ],
+    ),
+  ),
+),
+
+Expanded(
+  child: TextButton(
+    onPressed: onOpinion,
+    child: const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.chat_bubble_outline, color: Colors.grey),
+        Text(
           'Opinion',
+          softWrap: false,
           style: TextStyle(color: Colors.grey),
         ),
-      ),
+        Text(
+          '0',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ],
     ),
+  ),
+),
 
-    Expanded(
-      child: TextButton.icon(
-        onPressed: () => onSpread(text),
-        icon: const Icon(
-          Icons.share_outlined,
-          color: Colors.grey,
-        ),
-        label: const Text(
+Expanded(
+  child: TextButton(
+    onPressed: () => onSpread(text),
+    child: const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.share_outlined, color: Colors.grey),
+        Text(
           'Spread',
+          softWrap: false,
           style: TextStyle(color: Colors.grey),
         ),
-      ),
+        Text(
+          '0',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ],
     ),
-  ],
+  ),
 ),
                       
               
