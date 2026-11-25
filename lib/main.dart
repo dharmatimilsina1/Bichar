@@ -1446,7 +1446,7 @@ String timeAgo(DateTime dateTime) {
                 child: Image.file(
   File(photoPath),
   width: double.infinity,
-  height: 300,
+  height: 400,
   fit: BoxFit.contain,
   errorBuilder: (context, error, stackTrace) {
     return const SizedBox(
