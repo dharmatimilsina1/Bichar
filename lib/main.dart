@@ -1285,9 +1285,7 @@ String timeAgo(DateTime dateTime) {
   }
 }
 
-  @override
-  Widget build(BuildContext context) {
-  @override
+    @override
   Widget build(BuildContext context) {
     final data = post.data();
 
