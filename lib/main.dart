@@ -1319,14 +1319,30 @@ class PostCard extends StatelessWidget {
                 const SizedBox(width: 10),
 
                 Expanded(
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        name,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+      ),
+
+      if (createdAt != null) ...[
+        const SizedBox(height: 3),
+        Text(
+          timeAgo(createdAt),
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    ],
+  ),
+),
 
                 if (isOwner)
                   PopupMenuButton<String>(
