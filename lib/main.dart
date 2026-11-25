@@ -1617,15 +1617,31 @@ Expanded(
                           crossAxisAlignment:
                               CrossAxisAlignment.start,
                           children: [
-                            const CircleAvatar(
-                              radius: 15,
-                              backgroundColor: Color(0xFFFFDAD6),
-                              child: Icon(
-                                Icons.person,
-                                size: 17,
-                                color: Colors.brown,
-                              ),
-                            ),
+                            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: FirebaseFirestore.instance
+      .collection('publicProfiles')
+      .doc(opinionData['uid']?.toString() ?? '')
+      .snapshots(),
+  builder: (context, snapshot) {
+    final photoUrl = snapshot.data?.data()?['photoUrl']
+        ?.toString() ?? '';
+
+    return CircleAvatar(
+      radius: 15,
+      backgroundColor: const Color(0xFFFFDAD6),
+      backgroundImage: photoUrl.isNotEmpty
+          ? NetworkImage(photoUrl)
+          : null,
+      child: photoUrl.isEmpty
+          ? const Icon(
+              Icons.person,
+              size: 17,
+              color: Colors.brown,
+            )
+          : null,
+    );
+  },
+),
 
                             const SizedBox(width: 8),
 
