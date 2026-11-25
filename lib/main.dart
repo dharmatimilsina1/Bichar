@@ -1276,6 +1276,9 @@ class PostCard extends StatelessWidget {
 
     final postUid = data['uid']?.toString() ?? '';
     final name = data['name']?.toString() ?? 'User';
+    final createdAt = data['createdAt'] is Timestamp
+    ? (data['createdAt'] as Timestamp).toDate()
+    : null;
     final text = data['text']?.toString() ?? '';
     final photoPath = data['photoPath']?.toString() ?? '';
 
