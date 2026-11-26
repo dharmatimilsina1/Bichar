@@ -19,9 +19,12 @@ void main() async {
   await Firebase.initializeApp();
 
   await Supabase.initialize(
-    url: 'https://uwgyrsbvtmbnmiuitsjo.supabase.co',
-    anonKey: 'sb_publishable_यहाँ_तपाईंको_key',
-  );
+  url: 'https://uwgyrsbvtmbnmiuitsjo.supabase.co',
+  anonKey: 'YOUR_ACTUAL_PUBLISHABLE_KEY',
+  accessToken: () async {
+    return await FirebaseAuth.instance.currentUser?.getIdToken();
+  },
+);
 
   runApp(const BicharApp());
 }
